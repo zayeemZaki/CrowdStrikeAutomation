@@ -6,8 +6,8 @@ config = load_config('config.yaml')
 graphqlUrl = 'https://api.crowdstrike.com/identity-protection/combined/graphql/v1'
 
 #gets token
-token = getToken
-if token: print('Authentication successful')
+token = getToken()
+if token: print('Authentication Successful')
 else:
     print('Authentication failed:')
     exit()
