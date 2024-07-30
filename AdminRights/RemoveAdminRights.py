@@ -20,7 +20,7 @@ def removeAdminRights(token, session_id, username):
     return response.json()
 
 #gets token
-token = getToken
+token = getToken()
 if token: print('Authentication successful')
 else:
     print('Authentication failed:')
