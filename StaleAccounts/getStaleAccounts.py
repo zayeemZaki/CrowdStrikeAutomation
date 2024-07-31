@@ -40,6 +40,7 @@ print("Please enter how you want to sort the Stale Accounts:")
 print(" 1. type \"risk score\" to sort based on risk score.")
 print(" 2. type \"is human\" to sort based on if host is human.")
 print(" 3. type \"domain\" to sort based on the domain.")
+print(" 4. type \"inactive period\" to sort based on the inactive period.")
 
 sortingBasedOn = input("-")
 
@@ -59,6 +60,7 @@ query_map = {
                   domain
                 }
               }
+              inactivePeriod: inactive_period
             }
           }
         }
@@ -77,6 +79,7 @@ query_map = {
                   domain
                 }
               }
+              inactivePeriod: inactive_period
             }
           }
         }
@@ -95,6 +98,26 @@ query_map = {
                   domain
                 }
               }
+              inactivePeriod: inactive_period
+            }
+          }
+        }
+    """,
+    "inactive period": """
+        query {
+          entities(types: [USER], stale: true, sortKey: INACTIVE_PERIOD, sortOrder: DESCENDING, first: 100) {
+            nodes {
+              primaryDisplayName
+              secondaryDisplayName
+              isHuman: hasRole(type: HumanUserAccountRole)
+              riskScore
+              riskScoreSeverity
+              accounts {
+                ... on ActiveDirectoryAccountDescriptor {
+                  domain
+                }
+              }
+              inactivePeriod: inactive_period
             }
           }
         }
@@ -120,7 +143,8 @@ if response.status_code == 200:
         riskScore = user.get('riskScore')
         riskScoreSeverity = user.get('riskScoreSeverity')
         domain = user.get('accounts', [{}])[0].get('domain')
-        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain))
+        inactivePeriod = user.get('inactivePeriod')
+        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, inactivePeriod))
 
     data = {
         'Primary Name': [user[0] for user in allStaleUsers],
@@ -129,6 +153,7 @@ if response.status_code == 200:
         'Risk Score': [user[3] for user in allStaleUsers],
         'Risk Severity': [user[4] for user in allStaleUsers],
         'Domain': [user[5] for user in allStaleUsers],
+        'Inactive Period': [user[6] for user in allStaleUsers],
     }
 
     pd.set_option('display.max_rows', None)
@@ -139,11 +164,3 @@ if response.status_code == 200:
     print("\n", df, "\n")
 else:
     print('Failed to retrieve users:', response.status_code, response.text)
- 
-"""
-inactive_period
-
-countEntities(types: [USER] stale: true)
-
-better if else
-"""
