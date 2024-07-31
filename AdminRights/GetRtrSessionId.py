@@ -1,6 +1,6 @@
 import requests
 
-#intiates real time responsive session
+# Function to initiate Real Time Response session
 def initiateRtrSession(token, device_id):
     url = "https://api.crowdstrike.com/real-time-response/entities/sessions/v1"
     headers = {
