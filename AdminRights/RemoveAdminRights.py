@@ -44,3 +44,8 @@ result = removeAdminRights(token, session_id, username)
 
 # Prints final result
 print("Command Execution Result:", result)
+
+
+
+#Please input target hostname: fs-39141
+#Please enter target device username: miller-test-la
