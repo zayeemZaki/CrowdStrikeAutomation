@@ -2,7 +2,6 @@ import requests
 import pandas as pd
 from GetToken import getToken
 from LoadConfig import load_config  # loads config.yaml
-from datetime import datetime, timezone
 
 config = load_config('config.yaml')
 graphqlUrl = 'https://api.crowdstrike.com/identity-protection/combined/graphql/v1'
@@ -60,7 +59,7 @@ query {
                     domain
                 }
             }
-            mostRecentActivityEndTime
+            inactive_period
         }
     }
 }
@@ -80,14 +79,7 @@ if response.status_code == 200:
         riskScore = user.get('riskScore')
         riskScoreSeverity = user.get('riskScoreSeverity')
         domain = user.get('accounts', [{}])[0].get('domain')
-        mostRecentActivityEndTime = user.get('mostRecentActivityEndTime')
-        
-        # Calculate inactive period
-        if mostRecentActivityEndTime:
-            last_active_date = datetime.strptime(mostRecentActivityEndTime, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc)
-            inactive_period = (datetime.now(timezone.utc) - last_active_date).days
-        else:
-            inactive_period = 'Unknown'
+        inactive_period = user.get('inactive_period')
         
         allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, inactive_period))
         
@@ -111,7 +103,7 @@ if response.status_code == 200:
     elif sortingBasedOn == "domain":
         df = df.sort_values(by='Domain')
     elif sortingBasedOn == "inactive period":
-        df = df.sort_values(by='Inactive Period (days)', ascending=False if df['Inactive Period (days)'].dtype == 'int64' else True)
+        df = df.sort_values(by='Inactive Period (days)', ascending=False)
     else:
         print('Invalid input. Exiting.')
         exit()
