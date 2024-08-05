@@ -43,7 +43,7 @@ print(" 2. type \"is human\" to sort based on if host is human.")
 print(" 3. type \"domain\" to sort based on the domain.")
 print(" 4. type \"inactive period\" to sort based on the inactive period.")
 
-sortingBasedOn = input("-")
+sortingBasedOn = input("-").lower()
 
 # Query to fetch stale user entities
 entity_query = """
@@ -72,7 +72,6 @@ if response.status_code == 200:
     data = response.json()
     users = data.get('data', {}).get('entities', {}).get('nodes', [])
     allStaleUsers = []
-    entity_ids = []
 
     for user in users:
         primaryName = user.get('primaryDisplayName')
@@ -83,9 +82,14 @@ if response.status_code == 200:
         domain = user.get('accounts', [{}])[0].get('domain')
         mostRecentActivity = user.get('mostRecentActivity')
 
+<<<<<<< HEAD
         allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, mostRecentActivity))
         
     
+=======
+        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, mostRecentActivityEndTime))
+
+>>>>>>> edb8afcb167c06facb79369285374853b8f28c4a
     data = {
         'Primary Name': [user[0] for user in allStaleUsers],
         'Secondary Name': [user[1] for user in allStaleUsers],
