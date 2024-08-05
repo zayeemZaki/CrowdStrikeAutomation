@@ -60,7 +60,7 @@ query {
                     domain
                 }
             }
-            entityId
+            mostRecentActivityEndTime
         }
     }
 }
@@ -81,41 +81,19 @@ if response.status_code == 200:
         riskScore = user.get('riskScore')
         riskScoreSeverity = user.get('riskScoreSeverity')
         domain = user.get('accounts', [{}])[0].get('domain')
-        entity_id = user.get('entityId')
-        entity_ids.append(entity_id)
-        
-        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, entity_id))
-        
-    # Fetch inactive_period using REST API
-    inactive_periods = {}
-    details_response = requests.post(rest_api_url, headers=headers, json={'ids': entity_ids[:100]})
+        mostRecentActivityEndTime = user.get('mostRecentActivityEndTime')
 
-    if details_response.status_code == 200:
-        detections = details_response.json().get('resources', [])
-        for detection in detections:
-            entity_id = detection.get('id')
-            inactive_period = detection.get('inactive_period')
-            inactive_periods[entity_id] = inactive_period
-
-    else:
-        print('Failed to retrieve inactive periods:', details_response.status_code, details_response.text)
-        exit()
+        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, mostRecentActivityEndTime))
         
-    # Add inactive_period to allStaleUsers
-    updated_stale_users = []
-    for user in allStaleUsers:
-        entity_id = user[6]
-        inactive_period = inactive_periods.get(entity_id, 'Unknown')
-        updated_stale_users.append((*user[:6], inactive_period))
     
     data = {
-        'Primary Name': [user[0] for user in updated_stale_users],
-        'Secondary Name': [user[1] for user in updated_stale_users],
-        'Is Human': [user[2] for user in updated_stale_users],
-        'Risk Score': [user[3] for user in updated_stale_users],
-        'Risk Severity': [user[4] for user in updated_stale_users],
-        'Domain': [user[5] for user in updated_stale_users],
-        'Inactive Period (days)': [user[6] for user in updated_stale_users],
+        'Primary Name': [user[0] for user in allStaleUsers],
+        'Secondary Name': [user[1] for user in allStaleUsers],
+        'Is Human': [user[2] for user in allStaleUsers],
+        'Risk Score': [user[3] for user in allStaleUsers],
+        'Risk Severity': [user[4] for user in allStaleUsers],
+        'Domain': [user[5] for user in allStaleUsers],
+        'Inactive Period (days)': [user[6] for user in allStaleUsers],
     }
 
     df = pd.DataFrame(data)
