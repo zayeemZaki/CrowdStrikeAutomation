@@ -1,13 +1,15 @@
 import requests
 import pandas as pd
+from datetime import datetime, timezone
 from GetToken import getToken
 from LoadConfig import load_config  # loads config.yaml
 
+# Load config
 config = load_config('config.yaml')
 graphqlUrl = 'https://api.crowdstrike.com/identity-protection/combined/graphql/v1'
 rest_api_url = 'https://api.crowdstrike.com/alerts/entities/alerts/v1'
 
-# Gets token
+# Get token
 token = getToken()
 if token:
     print('Authentication Successful')
@@ -82,14 +84,16 @@ if response.status_code == 200:
         domain = user.get('accounts', [{}])[0].get('domain')
         mostRecentActivity = user.get('mostRecentActivity')
 
-<<<<<<< HEAD
-        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, mostRecentActivity))
+        # Calculate inactive period
+        if mostRecentActivity:
+            mostRecentActivityDate = datetime.fromisoformat(mostRecentActivity.replace('Z', '+00:00')).replace(tzinfo=timezone.utc)
+            inactivePeriod = (datetime.now(timezone.utc) - mostRecentActivityDate).days
+        else:
+            inactivePeriod = None
+
+        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, inactivePeriod))
         
     
-=======
-        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, mostRecentActivityEndTime))
-
->>>>>>> edb8afcb167c06facb79369285374853b8f28c4a
     data = {
         'Primary Name': [user[0] for user in allStaleUsers],
         'Secondary Name': [user[1] for user in allStaleUsers],
