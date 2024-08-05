@@ -5,6 +5,7 @@ from LoadConfig import load_config  # loads config.yaml
 
 config = load_config('config.yaml')
 graphqlUrl = 'https://api.crowdstrike.com/identity-protection/combined/graphql/v1'
+rest_api_url = 'https://api.crowdstrike.com/alerts/entities/alerts/v1'
 
 # Gets token
 token = getToken()
@@ -59,7 +60,7 @@ query {
                     domain
                 }
             }
-            inactive_period
+            entityId
         }
     }
 }
@@ -71,6 +72,7 @@ if response.status_code == 200:
     data = response.json()
     users = data.get('data', {}).get('entities', {}).get('nodes', [])
     allStaleUsers = []
+    entity_ids = []
 
     for user in users:
         primaryName = user.get('primaryDisplayName')
@@ -79,18 +81,41 @@ if response.status_code == 200:
         riskScore = user.get('riskScore')
         riskScoreSeverity = user.get('riskScoreSeverity')
         domain = user.get('accounts', [{}])[0].get('domain')
-        inactive_period = user.get('inactive_period')
+        entity_id = user.get('entityId')
+        entity_ids.append(entity_id)
         
-        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, inactive_period))
+        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, entity_id))
         
+    # Fetch inactive_period using REST API
+    inactive_periods = {}
+    details_response = requests.post(rest_api_url, headers=headers, json={'ids': entity_ids[:100]})
+
+    if details_response.status_code == 200:
+        detections = details_response.json().get('resources', [])
+        for detection in detections:
+            entity_id = detection.get('id')
+            inactive_period = detection.get('inactive_period')
+            inactive_periods[entity_id] = inactive_period
+
+    else:
+        print('Failed to retrieve inactive periods:', details_response.status_code, details_response.text)
+        exit()
+        
+    # Add inactive_period to allStaleUsers
+    updated_stale_users = []
+    for user in allStaleUsers:
+        entity_id = user[6]
+        inactive_period = inactive_periods.get(entity_id, 'Unknown')
+        updated_stale_users.append((*user[:6], inactive_period))
+    
     data = {
-        'Primary Name': [user[0] for user in allStaleUsers],
-        'Secondary Name': [user[1] for user in allStaleUsers],
-        'Is Human': [user[2] for user in allStaleUsers],
-        'Risk Score': [user[3] for user in allStaleUsers],
-        'Risk Severity': [user[4] for user in allStaleUsers],
-        'Domain': [user[5] for user in allStaleUsers],
-        'Inactive Period (days)': [user[6] for user in allStaleUsers],
+        'Primary Name': [user[0] for user in updated_stale_users],
+        'Secondary Name': [user[1] for user in updated_stale_users],
+        'Is Human': [user[2] for user in updated_stale_users],
+        'Risk Score': [user[3] for user in updated_stale_users],
+        'Risk Severity': [user[4] for user in updated_stale_users],
+        'Domain': [user[5] for user in updated_stale_users],
+        'Inactive Period (days)': [user[6] for user in updated_stale_users],
     }
 
     df = pd.DataFrame(data)
