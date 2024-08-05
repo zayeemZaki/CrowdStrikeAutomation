@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 from GetToken import getToken
-from LoadConfig import load_config # loads config.yaml
+from LoadConfig import load_config  # loads config.yaml
 from datetime import datetime, timezone
 
 config = load_config('config.yaml')
@@ -23,7 +23,7 @@ headers = {
 # Query to get the count of stale user entities
 count_query = """
 query {
-    countEntities(types: [USER], stale: true)
+ countEntities(types: [USER], stale: true)
 }
 """
 
@@ -60,7 +60,7 @@ query {
                     domain
                 }
             }
-            mostRecentActivityTimeStamp
+            mostRecentActivityEndTime
         }
     }
 }
@@ -80,17 +80,17 @@ if response.status_code == 200:
         riskScore = user.get('riskScore')
         riskScoreSeverity = user.get('riskScoreSeverity')
         domain = user.get('accounts', [{}])[0].get('domain')
-        mostRecentActivityTimeStamp = user.get('mostRecentActivityTimeStamp')
-
+        mostRecentActivityEndTime = user.get('mostRecentActivityEndTime')
+        
         # Calculate inactive period
-        if mostRecentActivityTimeStamp:
-            last_active_date = datetime.strptime(mostRecentActivityTimeStamp, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc)
+        if mostRecentActivityEndTime:
+            last_active_date = datetime.strptime(mostRecentActivityEndTime, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc)
             inactive_period = (datetime.now(timezone.utc) - last_active_date).days
         else:
             inactive_period = 'Unknown'
-
+        
         allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, inactive_period))
-
+        
     data = {
         'Primary Name': [user[0] for user in allStaleUsers],
         'Secondary Name': [user[1] for user in allStaleUsers],
@@ -115,7 +115,7 @@ if response.status_code == 200:
     else:
         print('Invalid input. Exiting.')
         exit()
- 
+    
     pd.set_option('display.max_rows', None)
     print("\n", df, "\n")
 else:
