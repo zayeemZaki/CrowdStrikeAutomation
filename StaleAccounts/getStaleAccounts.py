@@ -62,7 +62,9 @@ query {
                     domain
                 }
             }
-            mostRecentActivity
+            ... on EndpointEntity {
+                mostRecentActivity
+            }
         }
     }
 }
