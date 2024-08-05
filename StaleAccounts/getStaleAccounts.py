@@ -60,7 +60,7 @@ query {
                     domain
                 }
             }
-            mostRecentActivityEndTime
+            mostRecentActivity
         }
     }
 }
@@ -81,9 +81,9 @@ if response.status_code == 200:
         riskScore = user.get('riskScore')
         riskScoreSeverity = user.get('riskScoreSeverity')
         domain = user.get('accounts', [{}])[0].get('domain')
-        mostRecentActivityEndTime = user.get('mostRecentActivityEndTime')
+        mostRecentActivity = user.get('mostRecentActivity')
 
-        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, mostRecentActivityEndTime))
+        allStaleUsers.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, mostRecentActivity))
         
     
     data = {
