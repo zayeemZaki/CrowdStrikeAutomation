@@ -12,23 +12,23 @@ config = load_config('config.yaml')
 
 
 # Function to remove admin rights
-def removeAdminRights(token, session_id, username):
-    print(token, session_id, username)
-    url = "https://api.crowdstrike.com/real-time-response/entities/command/v1"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "base_command": "runscript",
-        "command_string": f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'",
-        "persist": True,
-        "session_id": session_id
-    }
-    response = requests.post(url, headers=headers, json=data)
-    response.raise_for_status()
-    return response.json()
+# def removeAdminRights(token, session_id, username):
+#     print(token, session_id, username)
+#     url = "https://api.crowdstrike.com/real-time-response/entities/command/v1"
+#     headers = {
+#         "Authorization": f"Bearer {token}",
+#         "Accept": "application/json",
+#         "Content-Type": "application/json"
+#     }
+#     data = {
+#         "base_command": "runscript",
+#         "command_string": f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'",
+#         "persist": True,
+#         "session_id": session_id
+#     }
+#     response = requests.post(url, headers=headers, json=data)
+#     response.raise_for_status()
+#     return response.json()
 
 # Gets token
 token = getToken()
@@ -54,7 +54,7 @@ username = input("Please enter target device username: ")
 
 # Do not hardcode API credentials!
 falcon = RealTimeResponse(client_id=config['client_id'],
-                          client_secret=config['client_id']
+                          client_secret=config['client_secret']
                           )
 
 response = falcon.execute_active_responder_command(base_command = "runscript",
