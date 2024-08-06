@@ -21,29 +21,33 @@ def removeAdminRights(token, session_id, username):
     response.raise_for_status()
     return response.json()
 
-# Gets token
-token = getToken()
-if token: 
-    print('Authentication successful')
-else:
-    print('Authentication failed:')
-    exit()
+# Main execution flow
+if __name__ == "__main__":
+    # Gets token
+    token = getToken()
+    if token: 
+        print('Authentication successful')
+    else:
+        print('Authentication failed:')
+        exit()
 
-# Gets device ID from hostname
-hostname = input("Please input target hostname: ") # Takes hostname as input
-device_id = getDeviceId(token, hostname)
+    # Gets device ID from hostname
+    hostname = input("Please input target hostname: ") # Takes hostname as input
+    device_id = getDeviceId(token, hostname)
 
-# Gets session ID using device ID
-session_id = initiateRtrSession(token, device_id)
+    # Gets session ID using device ID
+    session_id = initiateRtrSession(token, device_id)
 
-# Takes username as input
-username = input("Please enter target device username: ")
+    # Takes username as input
+    username = input("Please enter target device username: ")
 
-# Calls remove admin rights function and stores the result in result variable
-result = removeAdminRights(token, session_id, username)
+    # Calls remove admin rights function and stores the result in result variable
+    result = removeAdminRights(token, session_id, username)
 
-# Prints final result
-print("Command Execution Result:", result)
+    # Prints final result
+    print("Command Execution Result:", result)
+
+
 
 
 
