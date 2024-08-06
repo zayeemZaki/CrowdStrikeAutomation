@@ -63,7 +63,7 @@ query {
                 }
             }
             ... on EndpointEntity {
-                mostRecentActivity
+                mostRecentActivityEndTime
             }
         }
     }
@@ -84,11 +84,11 @@ if response.status_code == 200:
         riskScore = user.get('riskScore')
         riskScoreSeverity = user.get('riskScoreSeverity')
         domain = user.get('accounts', [{}])[0].get('domain')
-        mostRecentActivity = user.get('mostRecentActivity')
+        mostRecentActivityEndTime = user.get('mostRecentActivityEndTime')
 
         # Calculate inactive period
-        if mostRecentActivity:
-            mostRecentActivityDate = datetime.fromisoformat(mostRecentActivity.replace('Z', '+00:00')).replace(tzinfo=timezone.utc)
+        if mostRecentActivityEndTime:
+            mostRecentActivityDate = datetime.fromisoformat(mostRecentActivityEndTime.replace('Z', '+00:00')).replace(tzinfo=timezone.utc)
             inactivePeriod = (datetime.now(timezone.utc) - mostRecentActivityDate).days
         else:
             inactivePeriod = None
