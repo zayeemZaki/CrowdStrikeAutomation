@@ -37,7 +37,11 @@ falcon = RealTimeResponse(client_id=config['client_id'],
                           client_secret=config['client_secret']
                           )
 
+<<<<<<< HEAD
 command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'\""
+=======
+command_string = r"Remove-LocalGroupMember -Group 'Administrators' -Member '{}'".format(username)
+>>>>>>> 1d4454f (updated command_string)
 
 response = falcon.execute_active_responder_command(base_command="runscript",
                                                    command_string=f"runscript -Raw=```{command_string}```",
