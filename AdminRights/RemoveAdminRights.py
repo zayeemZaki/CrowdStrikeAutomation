@@ -55,5 +55,3 @@ print(response)
 
 
 
-#Please input target hostname: fs-39141
-#Please enter target device username: miller-test-la
