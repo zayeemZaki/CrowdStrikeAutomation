@@ -2,52 +2,53 @@ import requests
 from GetToken import getToken   
 from GetDeviceId import getDeviceId
 from GetRtrSessionId import initiateRtrSession
-from LoadConfig import load_config # loads config.yaml
+from LoadConfig import load_config  # loads config.yaml
 
-from falconpy import RealTimeResponse
+from falconpy import RealTimeResponseAdmin
 
-
+# Load configuration
 config = load_config('config.yaml')
 
-
-# Gets token
+# Authenticate and get token
 token = getToken()
-if token: 
-    print('Authentication successful')
-else:
-    print('Authentication failed:')
+if not token:
+    print('Authentication failed')
     exit()
 
-# Gets device ID from hostname
-hostname = input("Please input target hostname: ") # Takes hostname as input
+# Get device ID from hostname
+hostname = input("Please input target hostname: ")
 device_id = getDeviceId(token, hostname)
+if not device_id:
+    print('Failed to retrieve device ID')
+    exit()
 
-# Gets session ID using device ID
+# Initiate RTR session
 session_id = initiateRtrSession(token, device_id)
+if not session_id:
+    print('Failed to initiate RTR session')
+    exit()
 
-# Takes username as input
+# Get username
 username = input("Please enter target device username: ")
 
-# Calls remove admin rights function and stores the result in result variable
-# result = removeAdminRights(token, session_id, username)
+# Initialize RealTimeResponseAdmin object
+falcon = RealTimeResponseAdmin(client_id=config['client_id'],
+                               client_secret=config['client_secret'])
 
+# Command to remove user from local administrators
+command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
 
-# Do not hardcode API credentials!
-falcon = RealTimeResponse(client_id=config['client_id'],
-                          client_secret=config['client_secret']
-                          )
+# Execute the command
+response = falcon.execute_admin_command(base_command="runscript",
+                                        command_string=command_string,
+                                        session_id=session_id,
+                                        persist=True)
 
-
-command_string = r"Remove-LocalGroupMember -Group 'Administrators' -Member '{}'".format(username)
-
-
-response = falcon.execute_active_responder_command(base_command="runscript",
-                                                   command_string=f"runscript -Raw=```{command_string}```",
-                                                   persist=True,
-                                                   session_id=session_id
-                                                   )
-
-print(response)
+# Check response
+if response['status_code'] == 201:
+    print("Command executed successfully")
+else:
+    print(f"Failed to execute command: {response['body']['errors'][0]['message']}")
 
 
 # Prints final result
