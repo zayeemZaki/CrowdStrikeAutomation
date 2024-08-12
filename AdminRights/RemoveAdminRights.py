@@ -1,10 +1,8 @@
-import requests
-from GetToken import getToken   
+from falconpy import RealTimeResponseAdmin
+from GetToken import getToken
 from GetDeviceId import getDeviceId
 from GetRtrSessionId import initiateRtrSession
-from LoadConfig import load_config  # loads config.yaml
-
-from falconpy import RealTimeResponseAdmin
+from LoadConfig import load_config
 
 # Load configuration
 config = load_config('config.yaml')
@@ -49,6 +47,7 @@ if response['status_code'] == 201:
     print("Command executed successfully")
 else:
     print(f"Failed to execute command: {response['body']['errors'][0]['message']}")
+
 
 
 # Prints final result
