@@ -34,7 +34,7 @@ falcon = RealTimeResponseAdmin(client_id=config['client_id'],
                                client_secret=config['client_secret'])
 
 # Command to remove user from local administrators
-command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'\""
+command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
 
 # Execute the command
 response = falcon.execute_admin_command(base_command="runscript",
@@ -46,12 +46,6 @@ response = falcon.execute_admin_command(base_command="runscript",
 if response['status_code'] == 201:
     print("Command executed successfully")
 else:
-    print(f"Failed to execute command: {response['body']['errors'][0]['message']}")
-
-
-
-# Prints final result
-# print("Command Execution Result:", result)
-
-
-
+    # Print the full response body for debugging
+    print(f"Failed to execute command: {response['body']}")
+ 
