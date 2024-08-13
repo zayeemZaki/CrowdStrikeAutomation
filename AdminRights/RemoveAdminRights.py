@@ -34,7 +34,7 @@ falcon = RealTimeResponseAdmin(client_id=config['client_id'],
                                client_secret=config['client_secret'])
 
 # Command to remove user from local administrators
-command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
+command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'\""
 
 # Execute the command
 response = falcon.execute_admin_command(base_command="runscript",
