@@ -38,7 +38,7 @@ command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{use
 
 # Execute the PowerShell command via RTR
 response = falcon.execute_admin_command(base_command="runscript",
-                                        command_string=f"runscript -CloudFile=Remove-Admin -Command='{command_string}'",
+                                        command_string=command_string,
                                         session_id=session_id,
                                         persist=True)
 
