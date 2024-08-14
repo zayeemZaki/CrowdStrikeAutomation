@@ -33,14 +33,16 @@ username = input("Please enter target device username: ")
 falcon = RealTimeResponseAdmin(client_id=config['client_id'],
                                client_secret=config['client_secret'])
 
-# PowerShell command to remove the user from local administrators
-command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
+# RTR command to remove a user from local administrators
+command_string = f"net localgroup administrators {username} /delete"
 
-# Execute the PowerShell command via RTR
-response = falcon.execute_admin_command(base_command="runscript",
-                                        command_string=f"runscript -CloudFile=Remove-Admin -Command='{command_string}'",
-                                        session_id=session_id,
-                                        persist=True)
+# Execute the command using RTR
+response = falcon.execute_admin_command(
+    base_command="runscript",
+    command_string=command_string,
+    session_id=session_id,
+    persist=True
+)
 
 # Check response
 if response['status_code'] == 201:
