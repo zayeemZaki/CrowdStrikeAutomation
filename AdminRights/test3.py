@@ -40,26 +40,20 @@ command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{use
 response = falcon.execute_admin_command(base_command="runscript",
                                         command_string=command_string,
                                         session_id=session_id,
-                                        persist=True)
+                                        persist=True,
+                                        raw=True)  # Use raw=True for direct command execution
 
 # Check response
 if response['status_code'] == 201:
     print(f"Command executed successfully for user: {username}")
 else:
-<<<<<<< HEAD
-    print(f"Failed to execute command: {response['body']['errors'][0]['message']}")
-
-
-
-# Prints final result
-# print("Command Execution Result:", result)
-
-
-
-=======
     errors = response.get('body', {}).get('errors', [])
     if errors:
         print(f"Failed to execute command: {errors[0]['message']}")
     else:
         print("Failed to execute command: Unknown error")
->>>>>>> dc61f6a0e36b4ee37794feed517436b4ccd9e973
+
+
+
+
+
