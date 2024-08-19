@@ -35,13 +35,22 @@ falcon = RealTimeResponseAdmin(
     client_secret=config['client_secret']
 )
 
-# A basic but valid PowerShell command to remove user from local admin group
-command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
+# A well-formed PowerShell command for RTR script
+command_string = f'''
+Import-Module Microsoft.PowerShell.LocalAccounts
+if (Get-LocalUser -Name {username}) {{
+    Remove-LocalGroupMember -Group "Administrators" -Member "{username}"
+}}
+else {{
+    Write-Host "User not found"
+}}
+'''
 
 # Wrapping the command in double-quotes to avoid issues
 full_command = f'run Command="{command_string}"'
 
-# Execute the PowerShell command via RTR
+
+# Ensure wrapping in double-quotes for RTR commands
 response = falcon.execute_admin_command(
     base_command="runscript",
     command_string=full_command,
@@ -49,12 +58,8 @@ response = falcon.execute_admin_command(
     persist=True
 )
 
-# Check the full response for deeper insights
-print(f"API Response: {response}")
-
-# Handle success or failure responses
+# Check response
 if response['status_code'] == 201:
     print(f"Command executed successfully for user: {username}")
 else:
-    error_message = response.get('body', {}).get('errors', [{}])[0].get('message', 'Unknown error')
-    print(f"Failed to execute command: {error_message}")
+    print(f"Failed to execute command: {response['body']['errors'][0]['message']}")
