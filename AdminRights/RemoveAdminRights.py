@@ -30,31 +30,25 @@ if not session_id:
 username = input("Please enter target device username: ")
 
 # Initialize RealTimeResponseAdmin object
-falcon = RealTimeResponseAdmin(
-    client_id=config['client_id'],
-    client_secret=config['client_secret']
-)
+falcon = RealTimeResponseAdmin(client_id=config['client_id'],
+                               client_secret=config['client_secret'])
 
-# Construct the PowerShell command
-command_string = f'''
-Import-Module Microsoft.PowerShell.LocalAccounts;
-if (Get-LocalUser -Name "{username}") {{
-    Remove-LocalGroupMember -Group "Administrators" -Member "{username}";
-}} else {{
-    Write-Host "User not found";
-}}
-'''
+# PowerShell command to remove the user from local administrators
+command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
 
-# Execute the PowerShell script
-response = falcon.execute_admin_command(
-    base_command="runscript",
-    command_string=command_string,
-    session_id=session_id,
-    persist=True
-)
+# Execute the PowerShell command via RTR
+response = falcon.execute_admin_command(base_command="runscript",
+                                        command_string=command_string,
+                                        session_id=session_id,
+                                        persist=True)
 
 # Check response
 if response['status_code'] == 201:
     print(f"Command executed successfully for user: {username}")
 else:
     print(f"Failed to execute command: {response['body']['errors'][0]['message']}")
+
+
+
+# Prints final result
+# print("Command Execution Result:", result)

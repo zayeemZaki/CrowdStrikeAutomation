@@ -17,28 +17,26 @@ if not token:
 hostname = input("Please input target hostname: ")
 device_id = getDeviceId(token, hostname)
 if not device_id:
-    print('Failed to retrieve device ID')
+    print(f'Failed to retrieve device ID for hostname: {hostname}')
     exit()
 
 # Initiate RTR session
 session_id = initiateRtrSession(token, device_id)
 if not session_id:
-    print('Failed to initiate RTR session')
+    print(f'Failed to initiate RTR session for device ID: {device_id}')
     exit()
 
-# Get username
-username = input("Please enter target device username: ")
-
 # Initialize RealTimeResponseAdmin object
-falcon = RealTimeResponseAdmin(client_id=config['client_id'],
-                               client_secret=config['client_secret'])
+falcon = RealTimeResponseAdmin(
+    client_id=config['client_id'],
+    client_secret=config['client_secret']
+)
 
-# PowerShell command to remove the user from local administrators
-command_string = f'powershell -Command "Remove-LocalGroupMember -Group \'Administrators\' -Member \'{username}\'"'
+# Attempt to run a simple PowerShell command
+command_string = 'whoami'
 
-# Execute the PowerShell command via RTR
 response = falcon.execute_admin_command(
-    base_command="runscript",
+    base_command="run",
     command_string=command_string,
     session_id=session_id,
     persist=True
@@ -47,11 +45,6 @@ response = falcon.execute_admin_command(
 # Check response
 if response['status_code'] == 201:
     print("Command executed successfully")
+    print(response['body'])
 else:
     print(f"Failed to execute command: {response['body']['errors'][0]['message']}")
-
-
-
-
-
-
