@@ -53,6 +53,9 @@ response = falcon.execute_admin_command(
     persist=True
 )
 
+# Check the full response for deeper insights
+print(f"API Response: {response}")
+
 # Check response
 if response['status_code'] == 201:
     print(f"Command executed successfully for user: {username}")
