@@ -1,4 +1,4 @@
-from falconpy import RealTimeResponseAdmin, RealTimeResponse
+from falconpy import RealTimeResponseAdmin
 from GetToken import getToken
 from GetDeviceId import getDeviceId
 from GetRtrSessionId import initiateRtrSession
@@ -35,25 +35,20 @@ falcon = RealTimeResponseAdmin(
     client_secret=config['client_secret']
 )
 
-# A well-formed PowerShell command for RTR script
+# Construct the PowerShell command
 command_string = f'''
-Import-Module Microsoft.PowerShell.LocalAccounts
-if (Get-LocalUser -Name {username}) {{
-    Remove-LocalGroupMember -Group "Administrators" -Member "{username}"
-}}
-else {{
-    Write-Host "User not found"
+Import-Module Microsoft.PowerShell.LocalAccounts;
+if (Get-LocalUser -Name "{username}") {{
+    Remove-LocalGroupMember -Group "Administrators" -Member "{username}";
+}} else {{
+    Write-Host "User not found";
 }}
 '''
 
-# Wrapping the command in double-quotes to avoid issues
-full_command = f'run Command="{command_string}"'
-
-
-# Ensure wrapping in double-quotes for RTR commands
+# Execute the PowerShell script
 response = falcon.execute_admin_command(
     base_command="runscript",
-    command_string=full_command,
+    command_string=command_string,
     session_id=session_id,
     persist=True
 )
