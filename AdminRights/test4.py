@@ -36,12 +36,11 @@ falcon = RealTimeResponseAdmin(
 command_string = 'ipconfig'
 
 response = falcon.execute_admin_command(
-    base_command="run",
+    base_command="runscript",
     command_string=command_string,
     session_id=session_id,
     persist=True
 )
-
 
 # Check the full response for deeper insights
 print(f"API Response: {response}")

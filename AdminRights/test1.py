@@ -1,4 +1,4 @@
-from falconpy import RealTimeResponse
+from falconpy import RealTimeResponseAdmin
 from GetToken import getToken
 from GetDeviceId import getDeviceId
 from GetRtrSessionId import initiateRtrSession
@@ -27,22 +27,26 @@ if not session_id:
     exit()
 
 # Initialize RealTimeResponse object
-falcon = RealTimeResponse(
+falcon = RealTimeResponseAdmin(
     client_id=config['client_id'],
     client_secret=config['client_secret']
 )
 
 # Test with a basic command like 'ipconfig'
-response = falcon.execute_command(
+response = falcon.execute_admin_command(
     base_command="run",
-    command_string="ipconfig",  # Simple command to list network configuration
+    command_string="ps",  
     session_id=session_id,
     persist=True
 )
 
+
+# Check the full response for deeper insights
+print(f"API Response: {response}")
+
 # Check response
 if response['status_code'] == 201:
     print("Basic command executed successfully")
-    print(response['body'])
+    print(response)
 else:
     print(f"Failed to execute command: {response['body']['errors'][0]['message']}")

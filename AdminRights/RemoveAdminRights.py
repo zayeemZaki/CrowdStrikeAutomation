@@ -37,7 +37,7 @@ falcon = RealTimeResponseAdmin(client_id=config['client_id'],
 command_string = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
 
 # Execute the PowerShell command via RTR
-response = falcon.execute_admin_command(base_command="runscript",
+response = falcon.execute_admin_command(base_command="run",
                                         command_string=command_string,
                                         session_id=session_id,
                                         persist=True)

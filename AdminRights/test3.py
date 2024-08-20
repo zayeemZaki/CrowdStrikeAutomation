@@ -33,7 +33,7 @@ falcon = RealTimeResponseAdmin(
 )
 
 # Attempt to run a simple PowerShell command
-command_string = 'ipconfig'
+command_string = 'history'
 
 response = falcon.execute_admin_command(
     base_command="run",
@@ -41,7 +41,6 @@ response = falcon.execute_admin_command(
     session_id=session_id,
     persist=True
 )
-
 
 # Check the full response for deeper insights
 print(f"API Response: {response}")
