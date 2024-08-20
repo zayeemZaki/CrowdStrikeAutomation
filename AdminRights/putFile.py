@@ -36,7 +36,7 @@ local_file_path = "hello.txt"
 remote_file_path = "C:\\Documents\\hello.txt"
 
 def upload_file_to_cloud(token, local_file_path):
-    url = command_url
+    url = f"{command_url}"
     headers = {
         'Authorization': f'Bearer {token}',
     }
@@ -44,15 +44,16 @@ def upload_file_to_cloud(token, local_file_path):
         'file': open(local_file_path, 'rb')
     }
     data = {
-        'name': os.path.basename(local_file_path)
+        'file_name': os.path.basename(local_file_path),
+        'description': 'Uploaded from automation script'
     }
     response = requests.post(url, headers=headers, files=files, data=data)
     if response.status_code in range(200, 300):
-        print("File uploaded to cloud successfully")
-        sha256 = response.json()['resources'][0]['sha256']
-        return sha256
+        print("File uploaded successfully")
     else:
-        raise Exception("Failed to upload file to cloud: " + response.text)
+        raise Exception("Failed to upload file: " + response.text)
+        
+
 
 def deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id):
     url = deploy_url
@@ -74,12 +75,16 @@ def deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id):
     else:
         raise Exception("Failed to deploy file to host: " + response.text)
 
+
+
 def main():
     try:
         sha256 = upload_file_to_cloud(token, local_file_path)
         deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id)
     except Exception as e:
         print(f"Error: {e}")
+
+
 
 if __name__ == "__main__":
     main()
