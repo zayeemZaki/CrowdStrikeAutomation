@@ -34,6 +34,10 @@ if not session_id:
 local_file_path = "ipconfig.ps1"
 remote_file_path = "C:\\Documents\\ipconfig.ps1"
 
+
+
+
+
 def get_uploaded_files(token):
     url = check_files_url
     headers = {
@@ -51,9 +55,15 @@ def get_uploaded_files(token):
 
 def file_exists_in_cloud(file_list, file_name):
     for file in file_list:
-        if file['name'] == file_name:
+        # Extract just the file name from the full path
+        file_basename = os.path.basename(file['name'])
+        print("-------- - - -- - - -- - ")
+        print(file_basename, file_name)
+        if file_basename == file_name:
             return file['sha256']
     return None
+
+
 
 def upload_file_to_cloud(token, local_file_path):
     url = command_url
@@ -69,12 +79,20 @@ def upload_file_to_cloud(token, local_file_path):
     response = requests.post(url, headers=headers, files=files, data=data)
     if response.status_code in range(200, 300):
         try:
-            uploaded_resources = response.json().get('resources', [])
-            if uploaded_resources:
-                print("File uploaded successfully")
-                return uploaded_resources[0]['sha256']
+            # Fetch the list of currently uploaded files
+            file_list = get_uploaded_files(token)
+            print("File list:", file_list)
+            # Check if the uploaded file exists in the cloud and get its SHA256
+            file_name = os.path.basename(local_file_path)
+            sha256 = file_exists_in_cloud(file_list, file_name)
+
+
+            if sha256:
+                print("File uploaded successfully with sha256:", sha256)
+                return sha256
             else:
-                raise Exception("Upload response does not contain 'resources': " + response.text)
+                raise Exception("Uploaded file does not appear in the cloud storage")
+                          
         except KeyError:
             print("Unexpected response structure:", response.json())
             raise Exception("Failed to parse response from upload_file_to_cloud")
@@ -143,6 +161,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
