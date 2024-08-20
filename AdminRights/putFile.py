@@ -32,8 +32,8 @@ if not session_id:
 
 
 # Use os.path to construct a relative path
-local_file_path = "hello.txt"
-remote_file_path = "C:\\Documents\\hello.txt"
+local_file_path = "hello1.txt"
+remote_file_path = "C:\\Documents\\hello1.txt"
 
 def upload_file_to_cloud(token, local_file_path):
     url = f"{command_url}"
@@ -74,7 +74,6 @@ def deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id):
         print("File deployed to host successfully")
     else:
         raise Exception("Failed to deploy file to host: " + response.text)
-
 
 
 def main():
