@@ -31,11 +31,8 @@ if not session_id:
     print(f'Failed to initiate RTR session for device ID: {device_id}')
     exit()
 
-
-
-
-local_file_path = "ip.ps1"
-remote_file_path = "C:\\Documents\\ip.ps1"
+local_file_path = "ipconfig.ps1"
+remote_file_path = "C:\\Documents\\ipconfig.ps1"
 
 def get_uploaded_files(token):
     url = check_files_url
@@ -44,7 +41,11 @@ def get_uploaded_files(token):
     }
     response = requests.get(url, headers=headers)
     if response.status_code in range(200, 300):
-        return response.json()['resources']
+        try:
+            return response.json()['resources']
+        except KeyError:
+            print("Unexpected response structure:", response.json())
+            raise Exception("Failed to parse response from get_uploaded_files")
     else:
         raise Exception("Failed to get list of uploaded files: " + response.text)
 
@@ -54,11 +55,8 @@ def file_exists_in_cloud(file_list, file_name):
             return file['sha256']
     return None
 
-
-
-
 def upload_file_to_cloud(token, local_file_path):
-    url = f"{command_url}"
+    url = command_url
     headers = {
         'Authorization': f'Bearer {token}',
     }
@@ -70,13 +68,18 @@ def upload_file_to_cloud(token, local_file_path):
     }
     response = requests.post(url, headers=headers, files=files, data=data)
     if response.status_code in range(200, 300):
-        print("File uploaded successfully")
-        return response.json()['resources'][0]['sha256']
+        try:
+            uploaded_resources = response.json().get('resources', [])
+            if uploaded_resources:
+                print("File uploaded successfully")
+                return uploaded_resources[0]['sha256']
+            else:
+                raise Exception("Upload response does not contain 'resources': " + response.text)
+        except KeyError:
+            print("Unexpected response structure:", response.json())
+            raise Exception("Failed to parse response from upload_file_to_cloud")
     else:
         raise Exception("Failed to upload file: " + response.text)
-    
-
-
 
 def deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id):
     url = deploy_url
@@ -97,8 +100,6 @@ def deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id):
         print("File deployed to host successfully")
     else:
         raise Exception("Failed to deploy file to host: " + response.text)
-    
-
 
 def execute_script_on_host(token, device_id, session_id, remote_file_path):
     url = execute_url
@@ -108,7 +109,7 @@ def execute_script_on_host(token, device_id, session_id, remote_file_path):
     }
     data = {
         "base_command": "runscript",
-        "command_string": remote_file_path,
+        "command_string": f"powershell -ExecutionPolicy Bypass -File {remote_file_path}",
         "session_id": session_id,
         "device_id": device_id
     }
@@ -118,9 +119,6 @@ def execute_script_on_host(token, device_id, session_id, remote_file_path):
         print(response.json())
     else:
         raise Exception("Failed to execute script on host: " + response.text)
-
-
-
 
 def main():
     try:
@@ -132,12 +130,9 @@ def main():
             print("File already exists in CrowdStrike cloud.")
         else:
             sha256 = upload_file_to_cloud(token, local_file_path)
-
-
-        print("Sha256:")
-        print(sha256)
-
         
+        print("sha256: ", sha256)
+
         # Deploy the file to the host
         deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id)
         
