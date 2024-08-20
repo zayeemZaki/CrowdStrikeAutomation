@@ -31,7 +31,7 @@ if not session_id:
     exit()
 
 local_file_path = "hello.txt"
-remote_file_path = "C:\\Documents\\file.txt"
+remote_file_path = "C:\\Documents\\hello.txt"
 
 def upload_file(token, session_id, local_file_path, remote_file_path):
     url = f"{command_url}"
