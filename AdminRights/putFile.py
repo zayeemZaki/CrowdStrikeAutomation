@@ -100,38 +100,40 @@ def upload_file_to_cloud(token, local_file_path):
         raise Exception("Failed to upload file: " + response.text)
 
 def deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id):
-    url = deploy_url
     headers = {
         'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
     }
     data = {
-        "base_command": "put",
-        "command_string": remote_file_path,
-        "batch_id": sha256,
+        "command": "put",
+        "file": {
+            "sha256": sha256,
+            "file_path": remote_file_path
+        },
         "host_ids": [device_id],
-        "session_id": session_id,
-        "options": {}
+        "session_id": session_id
     }
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(deploy_url, headers=headers, json=data)
     if response.status_code in range(200, 300):
         print("File deployed to host successfully")
     else:
         raise Exception("Failed to deploy file to host: " + response.text)
 
 def execute_script_on_host(token, device_id, session_id, remote_file_path):
-    url = execute_url
     headers = {
         'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
     }
     data = {
-        "base_command": "runscript",
-        "command_string": f"powershell -ExecutionPolicy Bypass -File {remote_file_path}",
-        "session_id": session_id,
-        "device_id": device_id
+        "command": "runscript",
+        "arguments": {
+            "script_name": remote_file_path,
+            "command_line": f"powershell -ExecutionPolicy Bypass -File {remote_file_path}"
+        },
+        "host_ids": [device_id],
+        "session_id": session_id
     }
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(execute_url, headers=headers, json=data)
     if response.status_code in range(200, 300):
         print("Script executed on host successfully")
         print(response.json())
