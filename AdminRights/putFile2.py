@@ -1,15 +1,19 @@
 import requests
 from GetToken import getToken
 import json
+import base64
 
 SCRIPT_NAME = 'SimpleIPConfig'
-
 FALCON_BASE_URL = 'https://api.crowdstrike.com'
-# PowerShell script content embedded directly in the Python script
+
 SCRIPT_CONTENT = '''
 Write-Output "IP Configuration:"
 Get-NetIPConfiguration | Format-Table -Property InterfaceAlias, IPv4Address, IPv6Address, DefaultGateway
 '''
+
+# Convert the script content to base64
+encoded_script_content = base64.b64encode(SCRIPT_CONTENT.encode('utf-8')).decode('utf-8')
+
 # Authenticate and get token
 token = getToken()
 if not token:
@@ -25,7 +29,7 @@ def upload_script(token):
     payload = {
         'name': SCRIPT_NAME,
         'permission_type': 'public',  # Options: 'private', 'group', 'public'
-        'content': SCRIPT_CONTENT
+        'content': encoded_script_content
     }
     
     response = requests.post(url, headers=headers, json=payload)
@@ -43,6 +47,7 @@ if __name__ == '__main__':
 
     except Exception as e:
         print(f"An error occurred: {e}")
+
 
 
 
