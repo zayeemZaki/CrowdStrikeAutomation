@@ -118,18 +118,21 @@ def deploy_file_to_host(token, batch_id, sha256, remote_file_path):
         'Content-Type': 'application/json'
     }
     data = {
-        "base_command": "put", 
+        "base_command": "put",
+        "batch_id": batch_id,
+        "command_string": f"put {sha256} {remote_file_path}",
         "file": {
             "sha256": sha256,
             "file_path": remote_file_path
-        },
-        "batch_id": batch_id
+        }
     }
     response = requests.post(deploy_url, headers=headers, json=data)
     if response.status_code in range(200, 300):
         print("File deployed to host successfully")
     else:
         raise Exception("Failed to deploy file to host: " + response.text)
+
+
 
 def execute_script_on_host(token, batch_id, remote_file_path):
     headers = {

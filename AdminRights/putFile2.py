@@ -27,9 +27,10 @@ def upload_script(token):
         'Content-Type': 'application/json'
     }
     payload = {
-        'name': 'SimpleIPConfig',
+        'name': SCRIPT_NAME,
         'permission_type': 'public', 
         'content': encoded_script_content,
+        'platform': 'windows'  # Specify the target platform
     }
     
     response = requests.post(url, headers=headers, json=payload)
