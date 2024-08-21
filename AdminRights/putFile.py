@@ -105,7 +105,7 @@ def deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id):
         'Content-Type': 'application/json'
     }
     data = {
-        "command": "put",
+        "base_command": "put",  # Use 'base_command' here
         "file": {
             "sha256": sha256,
             "file_path": remote_file_path
@@ -118,6 +118,7 @@ def deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id):
         print("File deployed to host successfully")
     else:
         raise Exception("Failed to deploy file to host: " + response.text)
+
 
 def execute_script_on_host(token, device_id, session_id, remote_file_path):
     headers = {
