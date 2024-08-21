@@ -27,9 +27,9 @@ def upload_script(token):
         'Content-Type': 'application/json'
     }
     payload = {
-        'name': SCRIPT_NAME,
-        'permission_type': 'public',  # Options: 'private', 'group', 'public'
-        'content': encoded_script_content
+        'name': 'SimpleIPConfig',
+        'permission_type': 'public', 
+        'content': encoded_script_content,
     }
     
     response = requests.post(url, headers=headers, json=payload)
@@ -41,13 +41,7 @@ def upload_script(token):
 
 if __name__ == '__main__':
     try:
-
         # Upload PowerShell script
         upload_script(token)
-
     except Exception as e:
         print(f"An error occurred: {e}")
-
-
-
-

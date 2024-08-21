@@ -11,7 +11,7 @@ config = load_config('config.yaml')
 command_url = "https://api.crowdstrike.com/real-time-response/entities/put-files/v1"
 deploy_url = "https://api.crowdstrike.com/real-time-response/combined/batch-active-responder-command/v1"
 check_files_url = "https://api.crowdstrike.com/real-time-response/entities/put-files/v1"
-execute_url = "https://api.crowdstrike.com/real-time-response/entities/execute-command/v1"
+execute_url = "https://api.crowdstrike.com/real-time-response/combined/batch-active-responder-command/v1"
 
 # Authenticate and get token
 token = getToken()
@@ -34,9 +34,30 @@ if not session_id:
 local_file_path = "ipconfig.ps1"
 remote_file_path = "C:\\Documents\\ipconfig.ps1"
 
-
-
-
+def get_batch_id(token, host_ids):
+    url = "https://api.crowdstrike.com/real-time-response/combined/batch-init-session/v1"
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "host_ids": host_ids
+    }
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code in range(200, 300):
+        try:
+            batch_id = response.json().get('batch_id')
+            if batch_id:
+                print(f"Batch ID: {batch_id}")
+                return batch_id
+            else:
+                print("Batch id response: ", response)
+                raise Exception("Batch ID not found in response")
+        except KeyError:
+            print("Unexpected response structure:", response.json())
+            raise Exception("Failed to parse response from get_batch_id")
+    else:
+        raise Exception("Failed to initiate batch session: " + response.text)
 
 def get_uploaded_files(token):
     url = check_files_url
@@ -55,15 +76,12 @@ def get_uploaded_files(token):
 
 def file_exists_in_cloud(file_list, file_name):
     for file in file_list:
-        # Extract just the file name from the full path
         file_basename = os.path.basename(file['name'])
         print("-------- - - -- - - -- - ")
         print(file_basename, file_name)
         if file_basename == file_name:
             return file['sha256']
     return None
-
-
 
 def upload_file_to_cloud(token, local_file_path):
     url = command_url
@@ -79,39 +97,33 @@ def upload_file_to_cloud(token, local_file_path):
     response = requests.post(url, headers=headers, files=files, data=data)
     if response.status_code in range(200, 300):
         try:
-            # Fetch the list of currently uploaded files
             file_list = get_uploaded_files(token)
             print("File list:", file_list)
-            # Check if the uploaded file exists in the cloud and get its SHA256
             file_name = os.path.basename(local_file_path)
             sha256 = file_exists_in_cloud(file_list, file_name)
-
-
             if sha256:
                 print("File uploaded successfully with sha256:", sha256)
                 return sha256
             else:
                 raise Exception("Uploaded file does not appear in the cloud storage")
-                          
         except KeyError:
             print("Unexpected response structure:", response.json())
             raise Exception("Failed to parse response from upload_file_to_cloud")
     else:
         raise Exception("Failed to upload file: " + response.text)
 
-def deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id):
+def deploy_file_to_host(token, batch_id, sha256, remote_file_path):
     headers = {
         'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
     }
     data = {
-        "base_command": "put",  # Use 'base_command' here
+        "base_command": "put", 
         "file": {
             "sha256": sha256,
             "file_path": remote_file_path
         },
-        "host_ids": [device_id],
-        "session_id": session_id
+        "batch_id": batch_id
     }
     response = requests.post(deploy_url, headers=headers, json=data)
     if response.status_code in range(200, 300):
@@ -119,20 +131,15 @@ def deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id):
     else:
         raise Exception("Failed to deploy file to host: " + response.text)
 
-
-def execute_script_on_host(token, device_id, session_id, remote_file_path):
+def execute_script_on_host(token, batch_id, remote_file_path):
     headers = {
         'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
     }
     data = {
-        "command": "runscript",
-        "arguments": {
-            "script_name": remote_file_path,
-            "command_line": f"powershell -ExecutionPolicy Bypass -File {remote_file_path}"
-        },
-        "host_ids": [device_id],
-        "session_id": session_id
+        "base_command": "runscript",
+        "command_string": f"powershell -ExecutionPolicy Bypass -File {remote_file_path}",
+        "batch_id": batch_id
     }
     response = requests.post(execute_url, headers=headers, json=data)
     if response.status_code in range(200, 300):
@@ -154,16 +161,20 @@ def main():
         
         print("sha256: ", sha256)
 
+        # Get batch ID
+        batch_id = get_batch_id(token, [device_id])
+        
         # Deploy the file to the host
-        deploy_file_to_host(token, device_id, sha256, remote_file_path, session_id)
+        deploy_file_to_host(token, batch_id, sha256, remote_file_path)
         
         # Execute the script on the host
-        execute_script_on_host(token, device_id, session_id, remote_file_path)
+        execute_script_on_host(token, batch_id, remote_file_path)
     except Exception as e:
         print(f"Error: {e}")
 
 if __name__ == "__main__":
     main()
+
 
 
 
