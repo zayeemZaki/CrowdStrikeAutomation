@@ -110,6 +110,25 @@ def upload_file_to_cloud(token, local_file_path):
     else:
         raise Exception("Failed to upload file: " + response.text)
 
+def list_files_on_host(token, batch_id, remote_directory):
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "base_command": "ls",
+        "command_string": f"ls {remote_directory}",
+        "batch_id": batch_id
+    }
+    response = requests.post(execute_url, headers=headers, json=data)
+    if response.status_code in range(200, 300):
+        response_data = response.json()
+        print("Files listed successfully on host")
+        print(response_data)
+        return response_data
+    else:
+        raise Exception("Failed to list files on host: " + response.text)
+
 def deploy_file_to_host(token, batch_id, sha256, remote_file_path):
     headers = {
         'Authorization': f'Bearer {token}',
@@ -125,14 +144,16 @@ def deploy_file_to_host(token, batch_id, sha256, remote_file_path):
         }
     }
     response = requests.post(deploy_url, headers=headers, json=data)
+    response_data = response.json()
     if response.status_code in range(200, 300):
         print("File deployed to host successfully")
-        print("Deploy to host response: ", response)
+        print("Deploy to host response: ", response_data)
+        return response_data
     else:
         raise Exception("Failed to deploy file to host: " + response.text)
+    
 
-
-
+    
 def execute_script_on_host(token, batch_id, remote_file_path):
     headers = {
         'Authorization': f'Bearer {token}',
@@ -140,15 +161,26 @@ def execute_script_on_host(token, batch_id, remote_file_path):
     }
     data = {
         "base_command": "runscript",
-        "command_string": f"cmd /c dir {remote_file_path}",
+        "command_string": f"powershell -ExecutionPolicy Bypass -File {remote_file_path}",
         "batch_id": batch_id
     }
     response = requests.post(execute_url, headers=headers, json=data)
+    response_data = response.json()
     if response.status_code in range(200, 300):
         print("Script executed on host successfully")
-        print(response.json())
+        print(response_data)
     else:
-        raise Exception("Failed to execute script on host: " + response.text)
+        print("Failed to execute script on host:", response.text)
+    
+    task_data = response_data['combined']['resources'].get(device_id, {})
+    if 'errors' in task_data:
+        for error in task_data['errors']:
+            print(f"Error Code: {error['code']}, Message: {error['message']}")
+
+    if not task_data.get('complete', False):
+        print(f"Command incomplete on device: {device_id}. Check the status or the validity of the command.")
+    if task_data.get('stderr', ''):
+        print(f"Error output from script on host: {task_data['stderr']}")
 
 def main():
     try:
@@ -161,13 +193,23 @@ def main():
         else:
             sha256 = upload_file_to_cloud(token, local_file_path)
         
-        print("sha256: ", sha256)
+        print("sha256:", sha256)
 
         # Get batch ID
         batch_id = get_batch_id(token, [device_id])
-        
+
+        # List files before deployment for debugging
+        print("Listing files in C:\\Documents\\ before deployment")
+        list_files_on_host(token, batch_id, "C:\\Documents\\")
+
         # Deploy the file to the host
-        deploy_file_to_host(token, batch_id, sha256, remote_file_path)
+        deploy_response = deploy_file_to_host(token, batch_id, sha256, remote_file_path)
+        print("Deploy response:", deploy_response)
+        
+        # List files after deployment to verify
+        print("Listing files in C:\\Documents\\ after deployment")
+        files_after_deployment = list_files_on_host(token, batch_id, "C:\\Documents\\")
+        print("Files after deployment:", files_after_deployment)
         
         # Execute the script on the host
         execute_script_on_host(token, batch_id, remote_file_path)

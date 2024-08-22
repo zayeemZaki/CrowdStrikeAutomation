@@ -127,7 +127,7 @@ def deploy_file_to_host(token, batch_id, sha256, remote_file_path):
     response = requests.post(deploy_url, headers=headers, json=data)
     if response.status_code in range(200, 300):
         print("File deployed to host successfully")
-        print("Deploy to host response: ", response)
+        print("Deploy to host response: ", response.text)
     else:
         raise Exception("Failed to deploy file to host: " + response.text)
 
