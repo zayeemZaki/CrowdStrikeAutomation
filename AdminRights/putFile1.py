@@ -24,7 +24,7 @@ def upload_script(token):
     url = f'{FALCON_BASE_URL}/real-time-response/entities/scripts/v1'
     headers = {
         'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/script'
+        'Content-Type': 'application/json'
     }
     payload = {
         'name': SCRIPT_NAME,
