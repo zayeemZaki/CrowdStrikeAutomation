@@ -192,8 +192,9 @@ def main():
 
         # List files before deployment for debugging
         print("Listing files in C:\\Documents\\ before deployment")
-        list_files_on_host(token, batch_id, "C:\\Documents\\")
-        
+        files_before_deployment = list_files_on_host(token, batch_id, "C:\\Documents\\")
+        print("Files before deployment:", files_before_deployment)
+
         # Deploy the file to the host
         deploy_file_to_host(token, batch_id, sha256, remote_file_path)
 
