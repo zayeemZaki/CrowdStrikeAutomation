@@ -144,11 +144,25 @@ def execute_script_on_host(token, batch_id, remote_file_path):
         "batch_id": batch_id
     }
     response = requests.post(execute_url, headers=headers, json=data)
+    response_data = response.json()
     if response.status_code in range(200, 300):
         print("Script executed on host successfully")
-        print(response.json())
+        print(response_data)
     else:
-        raise Exception("Failed to execute script on host: " + response.text)
+        # Log detailed error information
+        print("Failed to execute script on host:", response.text)
+    
+    # Check if there were errors reported in the response content
+    if 'errors' in response_data['combined']['resources'][device_id]:
+        for error in response_data['combined']['resources'][device_id]['errors']:
+            print(f"Error Code: {error['code']}, Message: {error['message']}")
+
+    # Check if the command was not complete or had stderr output
+    task_data = response_data['combined']['resources'][device_id]
+    if not task_data['complete']:
+        print(f"Command incomplete on device: {device_id}. Check the status or the validity of the command.")
+    if task_data['stderr']:
+        print(f"Error output from script on host: {task_data['stderr']}")
 
 def main():
     try:
