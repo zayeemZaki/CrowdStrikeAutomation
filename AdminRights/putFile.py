@@ -118,7 +118,7 @@ def deploy_file_to_host(token, batch_id, sha256, remote_file_path):
     data = {
         "base_command": "put",
         "batch_id": batch_id,
-        "command_string": f"put {sha256} {remote_file_path}",
+        "command_string": f"{remote_file_path}",
         "file": {
             "sha256": sha256,
             "file_path": remote_file_path
