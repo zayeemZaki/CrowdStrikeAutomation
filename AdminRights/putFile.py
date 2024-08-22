@@ -50,6 +50,8 @@ def get_batch_id(token, host_ids):
             raise Exception("Failed to parse response from get_batch_id")
     else:
         raise Exception("Failed to initiate batch session: " + response.text)
+    
+
 # Initialize a batch session and get the batch ID
 batch_id = get_batch_id(token, [device_id])
 if not batch_id:
@@ -199,6 +201,7 @@ def main():
 
         # Deploy the file to the host
         deploy_file_to_host(token, batch_id, sha256, remote_file_path)
+        print("Deploy response:", deploy_response)
 
         # List files after deployment to verify
         print("Listing files in C:\\Documents\\ after deployment")
