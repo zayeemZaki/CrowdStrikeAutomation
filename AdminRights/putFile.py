@@ -200,7 +200,7 @@ def main():
         print("Files before deployment:", files_before_deployment)
 
         # Deploy the file to the host
-        deploy_file_to_host(token, batch_id, sha256, remote_file_path)
+        deploy_response = deploy_file_to_host(token, batch_id, sha256, remote_file_path)
         print("Deploy response:", deploy_response)
 
         # List files after deployment to verify
