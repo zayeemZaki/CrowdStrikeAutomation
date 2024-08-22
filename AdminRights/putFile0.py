@@ -26,11 +26,6 @@ if not device_id:
     print(f"Device ID not found for hostname: {hostname}")
     exit()
 
-session_id = initiateRtrSession(token, device_id)
-if not session_id:
-    print(f'Failed to initiate RTR session for device ID: {device_id}')
-    exit()
-
 local_file_path = "ipconfig.ps1"
 remote_file_path = "C:\\Documents\\ipconfig.ps1"
 
@@ -202,7 +197,7 @@ def main():
         print("Listing files in C:\\Documents\\ before deployment")
         files_before_deployment = list_files_on_host(token, batch_id, "C:\\Documents\\")
         print("Files before deployment:", files_before_deployment)
-        
+
         # Deploy the file to the host
         deploy_response = deploy_file_to_host(token, batch_id, sha256, remote_file_path)
         print("Deploy response:", deploy_response)

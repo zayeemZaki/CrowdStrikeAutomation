@@ -26,14 +26,6 @@ if not device_id:
     print(f"Device ID not found for hostname: {hostname}")
     exit()
 
-# Initialize a batch session and get the batch ID
-batch_id = get_batch_id(token, [device_id])
-if not batch_id:
-    print(f'Failed to obtain batch ID for device ID: {device_id}')
-    exit()
-
-local_file_path = "ipconfig.ps1"
-remote_file_path = "C:\\Documents\\ipconfig.ps1"
 
 def get_batch_id(token, host_ids):
     url = "https://api.crowdstrike.com/real-time-response/combined/batch-init-session/v1"
@@ -58,6 +50,16 @@ def get_batch_id(token, host_ids):
             raise Exception("Failed to parse response from get_batch_id")
     else:
         raise Exception("Failed to initiate batch session: " + response.text)
+# Initialize a batch session and get the batch ID
+batch_id = get_batch_id(token, [device_id])
+if not batch_id:
+    print(f'Failed to obtain batch ID for device ID: {device_id}')
+    exit()
+
+local_file_path = "ipconfig.ps1"
+remote_file_path = "C:\\Documents\\ipconfig.ps1"
+
+
 
 def get_uploaded_files(token):
     headers = {
