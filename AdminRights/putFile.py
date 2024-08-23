@@ -140,10 +140,11 @@ def execute_script_on_host(token, batch_id, remote_file_path):
     data = {
         "base_command": "runscript",
         "batch_id": batch_id,
-        "command_string": f"runscript -CloudFile=ipconfig.ps1"
+        "command_string": f"runscript -Raw=cmd.exe /c powershell.exe -ExecutionPolicy Bypass -File {remote_file_path}"
     }
     response = requests.post(execute_url, headers=headers, json=data)
     response_data = response.json()
+    
     if response.status_code in range(200, 300):
         print("")
         print("Script executed on host successfully")
@@ -160,6 +161,7 @@ def execute_script_on_host(token, batch_id, remote_file_path):
         print(f"Command incomplete on device: {device_id}. Check the status or the validity of the command.")
     if task_data.get('stderr', ''):
         print(f"Error output from script on host: {task_data['stderr']}")
+
 
 
 def main():
