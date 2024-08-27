@@ -6,7 +6,7 @@ from GetToken import getToken
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Script details
-script_name = 'ipconfig12.ps1'
+script_name = 'ip_configuration.ps1'
 script_content = "Write-Host 'Hello, CrowdStrike!'"
 
 # API endpoint to upload scripts
