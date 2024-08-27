@@ -1,26 +1,21 @@
 import requests
+import logging
 from GetToken import getToken
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Script details
 script_name = 'ipconfig.ps1'
-script_content = """
-# PowerShell script content here
-Get-ChildItem "C:\\"
-"""
+script_content = "Write-Host 'Hello, CrowdStrike!'"
 
 # API endpoint to upload scripts
 upload_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
 
-# Authenticate and get token
-token = getToken()
-if not token:
-    print('Authentication failed')
-    exit()
-
 def upload_script(token):
     headers = {
         'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
     }
     payload = {
         'name': script_name,
@@ -28,16 +23,31 @@ def upload_script(token):
         'content': script_content,
     }
     
+    # Add logging to track the request
+    logging.info(f'Uploading script: {script_name}')
+    
     response = requests.post(upload_url, headers=headers, json=payload)
-    if response.status_code == 201:
-        print(f"Script '{script_name}' uploaded successfully!")
+    try:
+        response.raise_for_status()  # Raises exception for HTTP errors
+        logging.info(f"Script '{script_name}' uploaded successfully!")
+        logging.debug('Response: %s', response.json())
         return response.json()
-    else:
-        raise Exception(f'Error uploading script: {response.status_code} - {response.text}')
+    except requests.exceptions.HTTPError as e:
+        logging.error(f'HTTP Error: {e} - {response.text}')
+        raise
+    except Exception as e:
+        logging.error(f'An error occurred: {e}')
+        raise
 
 if __name__ == '__main__':
+    # Authenticate and get token
+    token = getToken()
+    if not token:
+        logging.error('Authentication failed')
+        exit(1)
+
     try:
         # Upload PowerShell script
         upload_script(token)
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.error(f"An error occurred during script upload: {e}")
