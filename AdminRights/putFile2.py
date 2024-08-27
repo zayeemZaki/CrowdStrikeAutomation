@@ -16,16 +16,15 @@ def upload_script(token):
     headers = {
         'Authorization': f'Bearer {token}',
     }
-    payload = {
-        'name': script_name,
-        'permission_type': 'public', 
-        'content': script_content,
+    files = {
+        'name': (None, script_name),
+        'permission_type': (None, 'public'),
+        'file': (script_name, script_content, 'application/octet-stream')
     }
     
-    # Add logging to track the request
     logging.info(f'Uploading script: {script_name}')
     
-    response = requests.post(upload_url, headers=headers, json=payload)
+    response = requests.post(upload_url, headers=headers, files=files)
     try:
         response.raise_for_status()  # Raises exception for HTTP errors
         logging.info(f"Script '{script_name}' uploaded successfully!")
