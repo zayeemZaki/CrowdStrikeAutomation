@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
     device_id = getDeviceId(token, "FS-39141")
     if not device_id:
-        print(f"Device ID not found for hostname: {"FS-39141"}")
+        print(f"Device ID not found for hostname: {device_id}")
         exit()
 
     try:
