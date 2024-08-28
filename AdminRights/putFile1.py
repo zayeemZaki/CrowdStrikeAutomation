@@ -69,29 +69,29 @@ def upload_script(token):
         logging.error(f'An error occurred: {e}')
         raise
 
-def initiate_session(token, host_id):
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
-    }
-    payload = {
-        'host_ids': host_id
-    }
+# def initiate_session(token, host_id):
+#     headers = {
+#         'Authorization': f'Bearer {token}',
+#         'Content-Type': 'application/json'
+#     }
+#     payload = {
+#         'host_ids': host_id
+#     }
     
-    logging.info(f'Initiating session on host: {host_id}')
+#     logging.info(f'Initiating session on host: {host_id}')
     
-    response = requests.post(initiate_session_url, headers=headers, json=payload)
-    try:
-        response.raise_for_status()  # Raises exception for HTTP errors
-        logging.info(f"Session initiated on host '{host_id}' successfully!")
-        logging.debug('Response: %s', response.json())
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        logging.error(f'HTTP Error: {e} - {response.text}')
-        raise
-    except Exception as e:
-        logging.error(f'An error occurred: {e}')
-        raise
+#     response = requests.post(initiate_session_url, headers=headers, json=payload)
+#     try:
+#         response.raise_for_status()  # Raises exception for HTTP errors
+#         logging.info(f"Session initiated on host '{host_id}' successfully!")
+#         logging.debug('Response: %s', response.json())
+#         return response.json()
+#     except requests.exceptions.HTTPError as e:
+#         logging.error(f'HTTP Error: {e} - {response.text}')
+#         raise
+#     except Exception as e:
+#         logging.error(f'An error occurred: {e}')
+#         raise
 
 def run_script(token, session_id, script_id):
     headers = {
