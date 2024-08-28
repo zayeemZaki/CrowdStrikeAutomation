@@ -2,6 +2,7 @@ import requests
 import logging
 from GetToken import getToken
 from GetDeviceId import getDeviceId
+from GetRtrSessionId import initiateRtrSession
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -74,7 +75,7 @@ def initiate_session(token, host_id):
         'Content-Type': 'application/json'
     }
     payload = {
-        'host_ids': [host_id]
+        'host_ids': host_id
     }
     
     logging.info(f'Initiating session on host: {host_id}')
@@ -125,10 +126,13 @@ if __name__ == '__main__':
         logging.error('Authentication failed')
         exit(1)
 
-    device_id = getDeviceId(token, "FS-39141")
+    # Get device ID from hostname
+    hostname = input("Please input target hostname: ")
+    device_id = getDeviceId(token, hostname)
     if not device_id:
-        print(f"Device ID not found for hostname: {device_id}")
+        print(f'Failed to retrieve device ID for hostname: {hostname}')
         exit()
+        
 
     try:
         # Check if the script already exists
@@ -138,12 +142,11 @@ if __name__ == '__main__':
             upload_response = upload_script(token)
             script_id = upload_response['resources'][0]['id']
 
-        # Host ID where you want to run the script
-        host_id = device_id
-
-        # Initiate a session on the target host
-        session_response = initiate_session(token, host_id)
-        session_id = session_response['resources'][0]['session_id']  # Adjust if different
+        # Initiate RTR session
+        session_id = initiateRtrSession(token, device_id)
+        if not session_id:
+            print(f'Failed to initiate RTR session for device ID: {device_id}')
+            exit()
 
         # Run the uploaded script on the target host
         run_script(token, session_id, script_id)
