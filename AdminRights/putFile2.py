@@ -127,6 +127,8 @@ if __name__ == '__main__':
             exit()
 
         # Run the uploaded script on the target host
-        run_script(token, session_id, script_id)
+        script_result = run_script(token, session_id, script_id)
+        logging.info(f'Script execution result: {script_result}')
+
     except Exception as e:
         logging.error(f"An error occurred: {e}")
