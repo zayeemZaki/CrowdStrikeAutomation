@@ -1,3 +1,5 @@
+# different name
+
 import requests
 import logging
 from GetToken import getToken
@@ -10,7 +12,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 username = input("Please enter target device username: ")
 
 # Script details
-script_name = 'removeAdminRights1.ps1'
+script_name = 'removeAdminRights2.ps1'
 script_content = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
 
 
@@ -30,8 +32,9 @@ def get_script_list(token):
     response = requests.get(list_scripts_url, headers=headers)
     try:
         response.raise_for_status()
-        print("Get Script List: ", response)
-        return response.json()
+        response_json = response.json()
+        logging.debug(f'Get Script List Response JSON: {response_json}')
+        return response_json
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
         raise
@@ -41,7 +44,13 @@ def get_script_list(token):
 
 def check_script_exists(token, script_name):
     scripts = get_script_list(token)
-    for script in scripts.get('resources', []):
+    logging.debug(f'Scripts JSON: {scripts}')
+    resources = scripts.get('resources')
+    if resources is None:
+        logging.error("'resources' key not found in the JSON response.")
+        return None
+        
+    for script in resources:
         if script['name'] == script_name:
             logging.info(f"Script '{script_name}' already exists with ID: {script['id']}")
             return script['id']
@@ -64,8 +73,9 @@ def upload_script(token):
         response.raise_for_status()  # Raises exception for HTTP errors
         logging.info(f"Script '{script_name}' uploaded successfully!")
         logging.debug('Response: %s', response.json())
-        print("Upload Script Response: ", response)
-        return response.json()
+        response_json = response.json()
+        logging.debug(f'Upload Script Response JSON: {response_json}')
+        return response_json
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
         raise
@@ -120,7 +130,14 @@ if __name__ == '__main__':
         if not script_id:
             # Upload PowerShell script if it does not exist
             upload_response = upload_script(token)
-            script_id = upload_response['resources'][0]['id']
+            logging.debug(f'Upload response: {upload_response}')
+            
+            # Ensure the 'resources' key is in the response
+            if 'resources' in upload_response:
+                script_id = upload_response['resources'][0]['id']
+            else:
+                logging.error(f"'resources' key not found in upload response: {upload_response}")
+                raise KeyError("'resources' key not found in upload response")
 
         # Initiate RTR session
         session_id = initiateRtrSession(token, device_id)

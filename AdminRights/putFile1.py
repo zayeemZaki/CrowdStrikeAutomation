@@ -1,3 +1,6 @@
+# different list_scripts_url
+
+
 import requests
 import logging
 from GetToken import getToken
@@ -30,8 +33,9 @@ def get_script_list(token):
     response = requests.get(list_scripts_url, headers=headers)
     try:
         response.raise_for_status()
-        print("Get Script List: ", response)
-        return response.json()
+        response_json = response.json()
+        logging.debug(f'Get Script List Response JSON: {response_json}')
+        return response_json
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
         raise
@@ -41,6 +45,7 @@ def get_script_list(token):
 
 def check_script_exists(token, script_name):
     scripts = get_script_list(token)
+    logging.debug(f'Scripts JSON: {scripts}')
     for script in scripts.get('resources', []):
         if script['name'] == script_name:
             logging.info(f"Script '{script_name}' already exists with ID: {script['id']}")
