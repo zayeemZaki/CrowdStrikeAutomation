@@ -34,7 +34,7 @@ def get_script_list(token):
     try:
         response.raise_for_status()
         response_json = response.json()
-        logging.debug(f'Get Script List Response JSON: {response_json}')
+        logging.info(f'Get Script List Response JSON: {response_json}')
         return response_json
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
@@ -45,7 +45,7 @@ def get_script_list(token):
 
 def check_script_exists(token, script_name):
     scripts = get_script_list(token)
-    logging.debug(f'Scripts JSON: {scripts}')
+    logging.info(f'Scripts JSON: {scripts}')
     for script in scripts.get('resources', []):
         if script['name'] == script_name:
             logging.info(f"Script '{script_name}' already exists with ID: {script['id']}")
@@ -68,7 +68,7 @@ def upload_script(token):
     try:
         response.raise_for_status()  # Raises exception for HTTP errors
         logging.info(f"Script '{script_name}' uploaded successfully!")
-        logging.debug('Response: %s', response.json())
+        logging.info('Response: %s', response.json())
         return response.json()
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
@@ -94,7 +94,7 @@ def run_script(token, session_id, script_id):
     try:
         response.raise_for_status()  # Raises exception for HTTP errors
         logging.info(f"Script '{script_name}' executed successfully on session '{session_id}'!")
-        logging.debug('Response: %s', response.json())
+        logging.info('Response: %s', response.json())
         return response.json()
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')

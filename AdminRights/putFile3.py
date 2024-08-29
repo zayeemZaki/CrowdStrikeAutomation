@@ -33,7 +33,7 @@ def get_script_list(token):
     try:
         response.raise_for_status()
         response_json = response.json()
-        logging.debug(f'Get Script List Response JSON: {response_json}')
+        logging.info(f'Get Script List Response JSON: {response_json}')
         return response_json
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
@@ -44,7 +44,7 @@ def get_script_list(token):
 
 def check_script_exists(token, script_name):
     scripts = get_script_list(token)
-    logging.debug(f'Scripts JSON: {scripts}')
+    logging.info(f'Scripts JSON: {scripts}')
     resources = scripts.get('resources')
     if resources is None:
         logging.error("'resources' key not found in the JSON response.")
@@ -72,9 +72,9 @@ def upload_script(token):
     try:
         response.raise_for_status()  # Raises exception for HTTP errors
         logging.info(f"Script '{script_name}' uploaded successfully!")
-        logging.debug('Response: %s', response.json())
+        logging.info('Response: %s', response.json())
         response_json = response.json()
-        logging.debug(f'Upload Script Response JSON: {response_json}')
+        logging.info(f'Upload Script Response JSON: {response_json}')
         return response_json
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
@@ -100,7 +100,7 @@ def run_script(token, session_id, script_id):
     try:
         response.raise_for_status()  # Raises exception for HTTP errors
         logging.info(f"Script '{script_name}' executed successfully on session '{session_id}'!")
-        logging.debug('Response: %s', response.json())
+        logging.info('Response: %s', response.json())
         return response.json()
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
@@ -130,7 +130,7 @@ if __name__ == '__main__':
         if not script_id:
             # Upload PowerShell script if it does not exist
             upload_response = upload_script(token)
-            logging.debug(f'Upload response: {upload_response}')
+            logging.info(f'Upload response: {upload_response}')
             
             # Ensure the 'resources' key is in the response
             if 'resources' in upload_response:
