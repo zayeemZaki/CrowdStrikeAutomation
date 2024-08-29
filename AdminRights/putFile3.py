@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 username = input("Please enter target device username: ")
 
 # Script details
-script_name = 'removeAdminRights.ps1'
+script_name = 'removeAdminRights1.ps1'
 script_content = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
 
 
@@ -132,8 +132,8 @@ if __name__ == '__main__':
         script_result = run_script(token, session_id, script_id)
         logging.info(f'Script execution result: {script_result}')
 
+        print("")
         get_script_list(token)
-
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")

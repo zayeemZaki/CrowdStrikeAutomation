@@ -7,16 +7,18 @@ from GetRtrSessionId import initiateRtrSession
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+username = input("Please enter target device username: ")
+
 # Script details
-script_name = 'ip_configuration.ps1'
-script_content = "Write-Host 'Hello, CrowdStrike!'"
+script_name = 'removeAdminRights.ps1'
+script_content = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
 
 
 # API endpoints
 upload_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
 initiate_session_url = "https://api.crowdstrike.com/real-time-response/entities/sessions/v1"
 run_script_url = "https://api.crowdstrike.com/real-time-response/entities/active-responder-command/v1"
-list_scripts_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
+list_scripts_url = "https://api.crowdstrike.com/real-time-response/queries/scripts/v1"
 
 def get_script_list(token):
     headers = {
@@ -28,6 +30,7 @@ def get_script_list(token):
     response = requests.get(list_scripts_url, headers=headers)
     try:
         response.raise_for_status()
+        print("Get Script List: ", response)
         return response.json()
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
@@ -68,30 +71,6 @@ def upload_script(token):
     except Exception as e:
         logging.error(f'An error occurred: {e}')
         raise
-
-# def initiate_session(token, host_id):
-#     headers = {
-#         'Authorization': f'Bearer {token}',
-#         'Content-Type': 'application/json'
-#     }
-#     payload = {
-#         'host_ids': host_id
-#     }
-    
-#     logging.info(f'Initiating session on host: {host_id}')
-    
-#     response = requests.post(initiate_session_url, headers=headers, json=payload)
-#     try:
-#         response.raise_for_status()  # Raises exception for HTTP errors
-#         logging.info(f"Session initiated on host '{host_id}' successfully!")
-#         logging.debug('Response: %s', response.json())
-#         return response.json()
-#     except requests.exceptions.HTTPError as e:
-#         logging.error(f'HTTP Error: {e} - {response.text}')
-#         raise
-#     except Exception as e:
-#         logging.error(f'An error occurred: {e}')
-#         raise
 
 def run_script(token, session_id, script_id):
     headers = {
@@ -149,6 +128,11 @@ if __name__ == '__main__':
             exit()
 
         # Run the uploaded script on the target host
-        run_script(token, session_id, script_id)
+        script_result = run_script(token, session_id, script_id)
+        logging.info(f'Script execution result: {script_result}')
+
+        get_script_list(token)
+
+
     except Exception as e:
         logging.error(f"An error occurred: {e}")
