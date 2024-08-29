@@ -1,5 +1,3 @@
-#Actual Script
-
 import requests
 import logging
 from GetToken import getToken
@@ -15,12 +13,12 @@ username = input("Please enter target device username: ")
 script_name = 'removeAdminRights.ps1'
 script_content = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
 
-
 # API endpoints
 upload_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
 initiate_session_url = "https://api.crowdstrike.com/real-time-response/entities/sessions/v1"
 run_script_url = "https://api.crowdstrike.com/real-time-response/entities/active-responder-command/v1"
 list_scripts_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
+delete_script_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
 
 def get_script_list(token):
     headers = {
@@ -34,7 +32,7 @@ def get_script_list(token):
         response.raise_for_status()
         response_json = response.json()
         logging.info(f'Get Script List Response JSON: {response_json}')
-        return response.json()
+        return response_json
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
         raise
@@ -50,6 +48,25 @@ def check_script_exists(token, script_name):
             logging.info(f"Script '{script_name}' already exists with ID: {script['id']}")
             return script['id']
     return None
+
+def delete_script(token, script_id):
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+    delete_url = f"{delete_script_url}/{script_id}"
+    
+    logging.info(f"Deleting script: {script_id}")
+    
+    response = requests.delete(delete_url, headers=headers)
+    try:
+        response.raise_for_status()
+        logging.info(f"Script '{script_id}' deleted successfully!")
+    except requests.exceptions.HTTPError as e:
+        logging.error(f'HTTP Error: {e} - {response.text}')
+        raise
+    except Exception as e:
+        logging.error(f'An error occurred: {e}')
+        raise
 
 def upload_script(token):
     headers = {
@@ -68,7 +85,7 @@ def upload_script(token):
         response.raise_for_status()  # Raises exception for HTTP errors
         logging.info(f"Script '{script_name}' uploaded successfully!")
         logging.info('Response: %s', response.json())
-        print("Upload Script Response: ", response)
+        print("Upload Script Response:", response.json())
         return response.json()
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
@@ -77,7 +94,7 @@ def upload_script(token):
         logging.error(f'An error occurred: {e}')
         raise
 
-def run_script(token, session_id, script_id):
+def run_script(token, session_id):
     headers = {
         'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
@@ -117,15 +134,16 @@ if __name__ == '__main__':
         print(f'Failed to retrieve device ID for hostname: {hostname}')
         exit()
         
-
     try:
         # Check if the script already exists
         script_id = check_script_exists(token, script_name)
-        if not script_id:
-            # Upload PowerShell script if it does not exist
-            upload_response = upload_script(token)
-            script_id = upload_response['resources'][0]['id']
-
+        if script_id:
+            # Delete the existing script
+            delete_script(token, script_id)
+        
+        # Upload PowerShell script with the new content
+        upload_script(token)
+        
         # Initiate RTR session
         session_id = initiateRtrSession(token, device_id)
         if not session_id:
@@ -133,11 +151,10 @@ if __name__ == '__main__':
             exit()
 
         # Run the uploaded script on the target host
-        script_result = run_script(token, session_id, script_id)
+        script_result = run_script(token, session_id)
         logging.info(f'Script execution result: {script_result}')
 
         get_script_list(token)
-
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
