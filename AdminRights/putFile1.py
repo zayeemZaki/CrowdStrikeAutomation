@@ -23,15 +23,11 @@ delete_script_url = "https://api.crowdstrike.com/real-time-response/entities/scr
 def get_script_list(token):
     headers = {
         'Authorization': f'Bearer {token}',
-    }
-    
-    logging.info('Retrieving list of uploaded scripts')
-    
+    }    
     response = requests.get(list_scripts_url, headers=headers)
     try:
         response.raise_for_status()
         response_json = response.json()
-        logging.info(f'Get Script List Response JSON: {response_json}')
         return response_json
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
@@ -42,7 +38,6 @@ def get_script_list(token):
 
 def check_script_exists(token, script_name):
     scripts = get_script_list(token)
-    logging.info(f'Scripts JSON: {scripts}')
     for script in scripts.get('resources', []):
         if script['name'] == script_name:
             logging.info(f"Script '{script_name}' already exists with ID: {script['id']}")
@@ -75,31 +70,6 @@ def upload_script(token):
         logging.error(f'An error occurred: {e}')
         raise
 
-def edit_script(token):
-    headers = {
-        'Authorization': f'Bearer {token}',
-    }
-    files = {
-        'name': (None, script_name),
-        'permission_type': (None, 'public'),
-        'file': (script_name, script_content, 'application/octet-stream')
-    }
-    
-    logging.info(f'Updating script: {script_name}')
-    
-    response = requests.patch(upload_url, headers=headers, files=files)
-    try:
-        response.raise_for_status()  # Raises exception for HTTP errors
-        logging.info(f"Script '{script_name}' updated successfully!")
-        logging.info('Response: %s', response.json())
-        print("Update Script Response:", response.json())
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        logging.error(f'HTTP Error: {e} - {response.text}')
-        raise
-    except Exception as e:
-        logging.error(f'An error occurred: {e}')
-        raise
 
 def run_script(token, session_id):
     headers = {
@@ -127,14 +97,40 @@ def run_script(token, session_id):
         logging.error(f'An error occurred: {e}')
         raise
 
+def edit_script(token, script_id):
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+    files = {
+        'name': (None, script_name),
+        'permission_type': (None, 'public'),
+        'file': (script_name, script_content, 'application/octet-stream')
+    }
+    
+    edit_url = f"{upload_url}/{script_id}"
+    
+    logging.info(f'Updating script: {script_name}')
+    
+    response = requests.patch(edit_url, headers=headers, files=files)
+    try:
+        response.raise_for_status()  # Raises exception for HTTP errors
+        logging.info(f"Script '{script_name}' updated successfully!")
+        logging.info('Response: %s', response.json())
+        print("Update Script Response:", response.json())
+        return response.json()
+    except requests.exceptions.HTTPError as e:
+        logging.error(f'HTTP Error: {e} - {response.text}')
+        raise
+    except Exception as e:
+        logging.error(f'An error occurred: {e}')
+        raise
+
 if __name__ == '__main__':
-    # Authenticate and get token
     token = getToken()
     if not token:
         logging.error('Authentication failed')
         exit(1)
 
-    # Get device ID from hostname
     hostname = input("Please input target hostname: ")
     device_id = getDeviceId(token, hostname)
     if not device_id:
@@ -142,25 +138,18 @@ if __name__ == '__main__':
         exit()
         
     try:
-        # Check if the script already exists
         script_id = check_script_exists(token, script_name)
         if not script_id:
-            # Upload PowerShell script with the new content
             upload_script(token)
         else:
-            edit_script(token)
+            edit_script(token, script_id)
         
-        # Initiate RTR session
         session_id = initiateRtrSession(token, device_id)
         if not session_id:
             print(f'Failed to initiate RTR session for device ID: {device_id}')
             exit()
 
-        # Run the uploaded script on the target host
-        script_result = run_script(token, session_id)
-        logging.info(f'Script execution result: {script_result}')
-
-        get_script_list(token)
+        run_script(token, session_id)
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
