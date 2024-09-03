@@ -1,4 +1,4 @@
-#Edit Script with octet-stream
+#edit script with normal url and usual get_script_url
 
 import requests
 import logging
@@ -99,22 +99,21 @@ def run_script(token, session_id):
         logging.error(f'An error occurred: {e}')
         raise
 
+
 def edit_script(token, script_id):
     headers = {
         'Authorization': f'Bearer {token}',
     }
-    files = {
+    payload = {
         'id': script_id,
-        'name': (None, script_name),
-        'permission_type': (None, 'public'),
-        'file': (script_name, script_content, 'application/octet-stream')
+        'name': script_name,
+        'permission_type': 'public',
+        'content': script_content
     }
-    
-    edit_url = f"{upload_url}/{script_id}"
-    
+
     logging.info(f'Updating script: {script_name}')
-    
-    response = requests.patch(edit_url, headers=headers, files=files)
+
+    response = requests.patch(upload_url, headers=headers, json=payload)
     try:
         response.raise_for_status()  # Raises exception for HTTP errors
         logging.info(f"Script '{script_name}' updated successfully!")
@@ -128,6 +127,7 @@ def edit_script(token, script_id):
         logging.error(f'An error occurred: {e}')
         raise
 
+    
 if __name__ == '__main__':
     token = getToken()
     if not token:

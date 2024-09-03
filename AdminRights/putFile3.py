@@ -1,4 +1,4 @@
-#Edit Script with octet-stream
+#Edit script with normal url, getting scripts using different url
 
 import requests
 import logging
@@ -16,31 +16,36 @@ script_name = 'removeAdminRights.ps1'
 script_content = f"Remove-LocalGroupMember -Group 'Administrators' -Member '{username}'"
 
 # API endpoints
+query_scripts_url = "https://api.crowdstrike.com/real-time-response/queries/scripts/v1"
 upload_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
-initiate_session_url = "https://api.crowdstrike.com/real-time-response/entities/sessions/v1"
 run_script_url = "https://api.crowdstrike.com/real-time-response/entities/active-responder-command/v1"
-list_scripts_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
-delete_script_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
 
-def get_script_list(token):
+def get_script_ids(token):
     headers = {
         'Authorization': f'Bearer {token}',
-    }    
-    response = requests.get(list_scripts_url, headers=headers)
-    try:
-        response.raise_for_status()
-        response_json = response.json()
-        return response_json
-    except requests.exceptions.HTTPError as e:
-        logging.error(f'HTTP Error: {e} - {response.text}')
-        raise
-    except Exception as e:
-        logging.error(f'An error occurred: {e}')
-        raise
+    }
+    response = requests.get(query_scripts_url, headers=headers)
+    response.raise_for_status()
+    return response.json().get('resources', [])
+
+def get_script_details(token, script_ids):
+    if not script_ids:
+        return []
+
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+    params = {
+        'ids': script_ids
+    }
+    response = requests.get(upload_url, headers=headers, params=params)
+    response.raise_for_status()
+    return response.json().get('resources', [])
 
 def check_script_exists(token, script_name):
-    scripts = get_script_list(token)
-    for script in scripts.get('resources', []):
+    script_ids = get_script_ids(token)
+    scripts = get_script_details(token, script_ids)
+    for script in scripts:
         if script['name'] == script_name:
             logging.info(f"Script '{script_name}' already exists with ID: {script['id']}")
             return script['id']
@@ -50,15 +55,15 @@ def upload_script(token):
     headers = {
         'Authorization': f'Bearer {token}',
     }
-    files = {
-        'name': (None, script_name),
-        'permission_type': (None, 'public'),
-        'file': (script_name, script_content, 'application/octet-stream')
+    payload = {
+        'name': script_name,
+        'permission_type': 'public',
+        'content': script_content
     }
-    
+
     logging.info(f'Uploading script: {script_name}')
-    
-    response = requests.post(upload_url, headers=headers, files=files)
+
+    response = requests.post(upload_url, headers=headers, json=payload)
     try:
         response.raise_for_status()  # Raises exception for HTTP errors
         logging.info(f"Script '{script_name}' uploaded successfully!")
@@ -72,6 +77,32 @@ def upload_script(token):
         logging.error(f'An error occurred: {e}')
         raise
 
+def edit_script(token, script_id):
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+    payload = {
+        'id': script_id,
+        'name': script_name,
+        'permission_type': 'public',
+        'content': script_content
+    }
+
+    logging.info(f'Updating script: {script_name}')
+
+    response = requests.patch(upload_url, headers=headers, json=payload)
+    try:
+        response.raise_for_status()  # Raises exception for HTTP errors
+        logging.info(f"Script '{script_name}' updated successfully!")
+        logging.info('Response: %s', response.json())
+        print("Update Script Response:", response.json())
+        return response.json()
+    except requests.exceptions.HTTPError as e:
+        logging.error(f'HTTP Error: {e} - {response.text}')
+        raise
+    except Exception as e:
+        logging.error(f'An error occurred: {e}')
+        raise
 
 def run_script(token, session_id):
     headers = {
@@ -83,9 +114,9 @@ def run_script(token, session_id):
         'command_string': f'runscript -CloudFile={script_name}',
         'session_id': session_id
     }
-    
+
     logging.info(f'Running script: {script_name} on session: {session_id}')
-    
+
     response = requests.post(run_script_url, headers=headers, json=payload)
     try:
         response.raise_for_status()  # Raises exception for HTTP errors
@@ -99,27 +130,18 @@ def run_script(token, session_id):
         logging.error(f'An error occurred: {e}')
         raise
 
-def edit_script(token, script_id):
+def delete_script(token, script_id):
     headers = {
         'Authorization': f'Bearer {token}',
     }
-    files = {
-        'id': script_id,
-        'name': (None, script_name),
-        'permission_type': (None, 'public'),
-        'file': (script_name, script_content, 'application/octet-stream')
-    }
-    
-    edit_url = f"{upload_url}/{script_id}"
-    
-    logging.info(f'Updating script: {script_name}')
-    
-    response = requests.patch(edit_url, headers=headers, files=files)
+    url = f"{upload_url}/{script_id}"
+
+    logging.info(f'Deleting script with ID: {script_id}')
+
+    response = requests.delete(url, headers=headers)
     try:
         response.raise_for_status()  # Raises exception for HTTP errors
-        logging.info(f"Script '{script_name}' updated successfully!")
-        logging.info('Response: %s', response.json())
-        print("Update Script Response:", response.json())
+        logging.info(f"Script '{script_id}' deleted successfully!")
         return response.json()
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
@@ -139,14 +161,14 @@ if __name__ == '__main__':
     if not device_id:
         print(f'Failed to retrieve device ID for hostname: {hostname}')
         exit()
-        
+
     try:
         script_id = check_script_exists(token, script_name)
-        if not script_id:
-            upload_script(token)
-        else:
-            edit_script(token, script_id)
-        
+        if script_id:
+            delete_script(token, script_id)
+
+        upload_script(token)
+
         session_id = initiateRtrSession(token, device_id)
         if not session_id:
             print(f'Failed to initiate RTR session for device ID: {device_id}')
