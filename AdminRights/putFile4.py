@@ -22,11 +22,33 @@ run_script_url = "https://api.crowdstrike.com/real-time-response/entities/active
 list_scripts_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
 delete_script_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
 
-def get_script_list(token):
+query_scripts_url = "https://api.crowdstrike.com/real-time-response/queries/scripts/v1"
+get_scripts_url = "https://api.crowdstrike.com/real-time-response/entities/scripts/v1"
+
+def query_script_ids(token):
     headers = {
         'Authorization': f'Bearer {token}',
-    }    
-    response = requests.get(list_scripts_url, headers=headers)
+    }
+    response = requests.get(query_scripts_url, headers=headers)
+    try:
+        response.raise_for_status()
+        response_json = response.json()
+        return response_json.get('resources', [])
+    except requests.exceptions.HTTPError as e:
+        logging.error(f'HTTP Error: {e} - {response.text}')
+        raise
+    except Exception as e:
+        logging.error(f'An error occurred: {e}')
+        raise
+
+def get_scripts_details(token, script_ids):
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+    params = {
+        'ids': ','.join(script_ids)
+    }
+    response = requests.get(get_scripts_url, headers=headers, params=params)
     try:
         response.raise_for_status()
         response_json = response.json()
@@ -39,12 +61,16 @@ def get_script_list(token):
         raise
 
 def check_script_exists(token, script_name):
-    scripts = get_script_list(token)
-    for script in scripts.get('resources', []):
+    script_ids = query_script_ids(token)
+    if not script_ids:
+        return None
+    script_details = get_scripts_details(token, script_ids)
+    for script in script_details.get('resources', []):
         if script['name'] == script_name:
             logging.info(f"Script '{script_name}' already exists with ID: {script['id']}")
             return script['id']
     return None
+
 
 def upload_script(token):
     headers = {
@@ -101,13 +127,13 @@ def run_script(token, session_id):
 
 def edit_script(token, script_id):
     headers = {
-        'Authorization': f'Bearer {token}'
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/octet-stream'
     }
     files = {
-        'id': (None, script_id),
         'name': (None, script_name),
         'permission_type': (None, 'public'),
-        'file': (script_name, script_content, 'application/octet-stream')
+        'file': (script_id, script_name, script_content, 'application/octet-stream')
     }
     
     logging.info(f'Updating script: {script_name}')

@@ -101,13 +101,13 @@ def run_script(token, session_id):
 
 def edit_script(token, script_id):
     headers = {
-        'Authorization': f'Bearer {token}'
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/octet-stream'
     }
     files = {
-        'id': (None, script_id),
         'name': (None, script_name),
         'permission_type': (None, 'public'),
-        'file': (script_name, script_content, 'application/octet-stream')
+        'file': (script_id, script_name, script_content, 'application/octet-stream')
     }
     
     logging.info(f'Updating script: {script_name}')
