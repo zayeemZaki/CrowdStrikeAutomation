@@ -2,3 +2,5 @@ AdminRights/config.yaml
 StaleAccounts/config.yaml
 AdminRights/test.py
 AdminRights/output.txt
+AdminRights/__pycache__
+StaleAccounts/__pycache__
