@@ -126,7 +126,6 @@ def edit_script(token, script_id):
         raise
 
 
-# Add this function to check the online status of the device
 def is_device_online(token, device_id):
     check_status_url = f"https://api.crowdstrike.com/devices/entities/devices/v1?ids={device_id}"
     headers = {
@@ -137,9 +136,9 @@ def is_device_online(token, device_id):
     try:
         response.raise_for_status()
         device_info = response.json()
-        # Check if the device is online
+
         for device in device_info.get('resources', []):
-            if device.get('status') == 'normal':  # 'normal' indicates the device is online
+            if device.get('status') == 'normal': 
                 logging.info(f"Device {device_id} is online.")
                 return True
             else:
@@ -152,7 +151,6 @@ def is_device_online(token, device_id):
         logging.error(f'An error occurred: {e}')
         raise
 
-# Modify the main part of your script to check for device status
 if __name__ == '__main__':
     token = getToken()
     if not token:
@@ -172,7 +170,6 @@ if __name__ == '__main__':
         else:
             edit_script(token, script_id)
 
-        # Loop to check if the device is online
         while True:
             if is_device_online(token, device_id):
                 session_id = initiateRtrSession(token, device_id)
@@ -180,10 +177,10 @@ if __name__ == '__main__':
                     print(f'Failed to initiate RTR session for device ID: {device_id}')
                     exit()
                 run_script(token, session_id)
-                break  # Exit the loop after successful execution
+                break 
             else:
                 logging.info("Device is offline. Waiting before retrying...")
-                time.sleep(60)  # Wait for 60 seconds before checking again
+                time.sleep(60)
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
