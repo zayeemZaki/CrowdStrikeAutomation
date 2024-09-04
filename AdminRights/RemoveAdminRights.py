@@ -1,5 +1,5 @@
 #Edit Script with octet-stream
-
+import time
 import requests
 import logging
 from GetToken import getToken
@@ -125,6 +125,34 @@ def edit_script(token, script_id):
         logging.error(f'An error occurred: {e}')
         raise
 
+
+# Add this function to check the online status of the device
+def is_device_online(token, device_id):
+    check_status_url = f"https://api.crowdstrike.com/devices/entities/devices/v1?ids={device_id}"
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+    
+    response = requests.get(check_status_url, headers=headers)
+    try:
+        response.raise_for_status()
+        device_info = response.json()
+        # Check if the device is online
+        for device in device_info.get('resources', []):
+            if device.get('status') == 'normal':  # 'normal' indicates the device is online
+                logging.info(f"Device {device_id} is online.")
+                return True
+            else:
+                logging.info(f"Device {device_id} is offline.")
+                return False
+    except requests.exceptions.HTTPError as e:
+        logging.error(f'HTTP Error: {e} - {response.text}')
+        raise
+    except Exception as e:
+        logging.error(f'An error occurred: {e}')
+        raise
+
+# Modify the main part of your script to check for device status
 if __name__ == '__main__':
     token = getToken()
     if not token:
@@ -136,20 +164,26 @@ if __name__ == '__main__':
     if not device_id:
         print(f'Failed to retrieve device ID for hostname: {hostname}')
         exit()
-        
+
     try:
         script_id = check_script_exists(token, script_name)
         if not script_id:
             upload_script(token)
         else:
             edit_script(token, script_id)
-        
-        session_id = initiateRtrSession(token, device_id)
-        if not session_id:
-            print(f'Failed to initiate RTR session for device ID: {device_id}')
-            exit()
 
-        run_script(token, session_id)
+        # Loop to check if the device is online
+        while True:
+            if is_device_online(token, device_id):
+                session_id = initiateRtrSession(token, device_id)
+                if not session_id:
+                    print(f'Failed to initiate RTR session for device ID: {device_id}')
+                    exit()
+                run_script(token, session_id)
+                break  # Exit the loop after successful execution
+            else:
+                logging.info("Device is offline. Waiting before retrying...")
+                time.sleep(60)  # Wait for 60 seconds before checking again
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
