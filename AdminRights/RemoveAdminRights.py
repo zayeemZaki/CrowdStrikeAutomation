@@ -127,29 +127,33 @@ def edit_script(token, script_id):
 
 
 def is_device_online(token, device_id):
-    check_status_url = f"https://api.crowdstrike.com/devices/entities/devices/v1?ids={device_id}"
+    url = "https://api.crowdstrike.com/devices/entities/online-state/v1"
     headers = {
         'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    params = {
+        'ids': device_id
     }
     
-    response = requests.get(check_status_url, headers=headers)
+    response = requests.get(url, headers=headers, params=params)
     try:
         response.raise_for_status()
-        device_info = response.json()
-
-        for device in device_info.get('resources', []):
-            if device.get('status') == 'normal': 
-                logging.info(f"Device {device_id} is online.")
-                return True
-            else:
-                logging.info(f"Device {device_id} is offline.")
-                return False
+        data = response.json()
+        if data['resources']:
+            state = data['resources'][0].get('state')
+            logging.info(f"Device {device_id} is currently {state}")
+            return state == 'online'
+        else:
+            logging.error(f"Failed to get online state for device {device_id}")
+            return False
     except requests.exceptions.HTTPError as e:
         logging.error(f'HTTP Error: {e} - {response.text}')
         raise
     except Exception as e:
         logging.error(f'An error occurred: {e}')
         raise
+
 
 if __name__ == '__main__':
     token = getToken()
