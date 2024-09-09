@@ -1,49 +1,50 @@
 import requests
 from GetToken import getToken
 
-
-
-def search_iocs(access_token, filter_criteria):
-    url = 'https://api.crowdstrike.com/intel/queries/iocs/v1'
+def search_indicators(access_token, filter_criteria):
+    url = 'https://api.crowdstrike.com/intel/queries/indicators/v1'
     headers = {
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json'
     }
     params = {
-        'filter': filter_criteria  # FQL filter
+        'filter': filter_criteria 
     }
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
-    return response.json()['resources']
+    return response.json().get('resources', [])
 
-def get_ioc_details(access_token, ioc_ids):
-    url = 'https://api.crowdstrike.com/intel/entities/iocs/v1'
+def get_indicator_details(access_token, indicator_ids):
+    url = 'https://api.crowdstrike.com/intel/entities/indicators/GET/v1'
     headers = {
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json'
     }
-    params = {
-        'ids': ioc_ids
+    data = {
+        'ids': indicator_ids
     }
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.post(url, headers=headers, json=data) 
     response.raise_for_status()
-    return response.json()['resources']
+    return response.json().get('resources', [])
 
 def main():
-    
-    token = getToken()
+    try:
+        token = getToken()
 
-    filter_criteria = "indicator_type:'md5'"
+        filter_criteria = "indicator_type:'md5'"
+        
+        indicators = search_indicators(token, filter_criteria)
+        print(f"Found {len(indicators)} indicators.")
+        
+        if indicators:
+            indicator_ids = indicators  
+            indicator_details = get_indicator_details(token, indicator_ids)
+            print("Indicator Details:", indicator_details)
+        else:
+            print("No indicators found.")
     
-    iocs = search_iocs(token, filter_criteria)
-    print(f"Found {len(iocs)} IOCs.")
-    
-    if iocs:
-        ioc_ids = ','.join(iocs)
-        ioc_details = get_ioc_details(token, ioc_ids)
-        print("IOC Details:", ioc_details)
-    else:
-        print("No IOCs found.")
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
 
 if __name__ == '__main__':
     main()
