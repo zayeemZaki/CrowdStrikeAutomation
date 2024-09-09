@@ -4,3 +4,5 @@ AdminRights/test.py
 AdminRights/output.txt
 AdminRights/__pycache__
 StaleAccounts/__pycache__
+ThreatIntelligence/config.yaml
+ThreatIntelligence/__pycache__
