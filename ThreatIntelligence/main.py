@@ -31,7 +31,7 @@ def main():
     try:
         token = getToken()
 
-        filter_criteria = "indicator_type:'md5'"
+        filter_criteria = "(indicator_type:'md5' OR indicator_type:'sha256') AND created_date:>'2022-01-01T00:00:00Z'"
         
         indicators = search_indicators(token, filter_criteria)
         print(f"Found {len(indicators)} indicators.")
