@@ -9,7 +9,7 @@ def query_reports(access_token, filter_criteria):
     }
     params = {
         'filter': filter_criteria,
-        'limit': 10  # Example limit, adjust as needed
+        'limit': 10  
     }
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()

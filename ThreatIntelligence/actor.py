@@ -38,10 +38,14 @@ if actor_ids:
     for actor_id in actor_ids:
         details = get_actor_details(token, actor_id)
         if details:
-            actor_details_list.extend(details) 
+            actor_details_list.extend(details)
 
     df = pd.DataFrame(actor_details_list)
     print("Actor Details DataFrame:")
     print(df)
+
+    output_filename = "actor_details.xlsx"
+    df.to_excel(output_filename, index=False)
+    print(f"Actor details have been saved to {output_filename}")
 else:
     print("No actors found.")
