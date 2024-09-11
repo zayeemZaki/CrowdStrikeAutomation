@@ -8,3 +8,4 @@ ThreatIntelligence/config.yaml
 ThreatIntelligence/__pycache__
 ThreatIntelligence/actor_details.xlsx
 ThreatIntelligence/scanSharepoint.py
+Endpoint/config.yaml
