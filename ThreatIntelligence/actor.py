@@ -29,7 +29,9 @@ def get_actor_details(access_token, actor_id):
     return response.json().get('resources', [])
 
 token = getToken()
-filter_criteria = "target_countries:'china'"
+# filter_criteria = "target_countries:'china' AND motivation:'financial' AND last_activity_date:>'2022-01-01'"
+filter_criteria = "last_activity_date:>'2024-01-01'"
+
 actor_ids = query_actors(token, filter_criteria)
 print(f"Found {len(actor_ids)} actors.")
 
