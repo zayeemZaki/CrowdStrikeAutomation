@@ -8,4 +8,11 @@ ThreatIntelligence/config.yaml
 ThreatIntelligence/__pycache__
 ThreatIntelligence/actor_details.xlsx
 ThreatIntelligence/scanSharepoint.py
-Endpoint/config.yaml
+EndPoint/config.yaml
+sendEmail.py
+travelAdvisory.py
+travelAdvisory1.py
+EndPoint/alerts.csv
+EndPoint/behaviors.csv
+EndPoint/detections.csv
+EndPoint/incidents.csv

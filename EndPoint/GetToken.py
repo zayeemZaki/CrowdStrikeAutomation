@@ -1,8 +1,8 @@
 import requests
-from LoadConfig import load_config # loads config.yaml
+import os
+import yaml
+import sys
 authUrl = 'https://api.crowdstrike.com/oauth2/token'
-
-config = load_config('config.yaml')
 
 def getToken():
     authPayload = {
@@ -17,3 +17,20 @@ def getToken():
     token = response.json().get('access_token')
 
     return token
+
+# Function to load configuration
+def load_config(file_path):
+    if not os.path.isfile(file_path):
+        print(f"Error: Configuration file '{file_path}' not found.")
+        sys.exit(1)
+
+    try:
+        with open(file_path, 'r') as f:
+            config = yaml.safe_load(f)
+            return config
+    except yaml.YAMLError as e:
+        print(f"Error reading configuration file: {e}")
+        sys.exit(1)
+
+
+config = load_config('config.yaml')
