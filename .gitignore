@@ -16,3 +16,6 @@ EndPoint/alerts.csv
 EndPoint/behaviors.csv
 EndPoint/detections.csv
 EndPoint/incidents.csv
+SCCM_inventory/FS.LocalSCCM.csv
+SCCM_inventory/QA.fsSCCM.csv
+SCCM_inventory/inventory_sccm.xlsx

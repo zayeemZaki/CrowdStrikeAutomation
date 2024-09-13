@@ -4,10 +4,11 @@ import pandas as pd
 print("Available ODBC Drivers:", pyodbc.drivers())
 
 connection_string = (
-    "Driver={SQL Server};"
+    "Driver={ODBC Driver 18 for SQL Server};"
     "Server=edr1sql01s530;"
     "Database=CM_FS3;"
     "Trusted_Connection=yes;"
+    "TrustServerCertificate=yes;"
 )
 
 query = """
