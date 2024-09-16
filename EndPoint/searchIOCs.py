@@ -1,27 +1,53 @@
 import requests
 from GetToken import getToken
 
-CROWDSTRIKE_IOC_SEARCH_URL = 'https://api.crowdstrike.com/indicators/queries/iocs/v1'
+IOC_QUERY_URL = "https://api.crowdstrike.com/iocs/queries/indicators/v1"
+IOC_DETAIL_URL = "https://api.crowdstrike.com/iocs/entities/indicators/v1"
 
-token = getToken()
-
-def search_iocs():
+# Query IOCs
+def query_ioc_ids(token):
     headers = {
         'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
     }
-    search_params = {
-        'types': 'hash_sha256',
-        'values': ['<SHA256_HASH>'] 
-    }
-    response = requests.get(CROWDSTRIKE_IOC_SEARCH_URL, headers=headers, params=search_params)
-    response.raise_for_status()
-    return response.json()
+    response = requests.get(IOC_QUERY_URL, headers=headers)
+    if response.status_code == 200:
+        return response.json().get('resources', [])
+    else:
+        raise Exception(f"Failed to query IOCs: {response.text}")
 
-ioc_results = search_iocs()
-if 'resources' in ioc_results:
-    print("IOC Search Results:")
-    for ioc_id in ioc_results['resources']:
-        print(f'IOC ID: {ioc_id}')
-else:
-    print("No IOCs found.")
+# Get detailed information for each IOC
+def get_ioc_details(token, ioc_ids):
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    params = {'ids': ','.join(ioc_ids)}
+    response = requests.get(IOC_DETAIL_URL, headers=headers, params=params)
+    if response.status_code == 200:
+        return response.json().get('resources', [])
+    else:
+        raise Exception(f"Failed to get IOC details: {response.text}")
+
+def detect_iocs():
+    token = get_access_token()
+    ioc_ids = query_ioc_ids(token)
+    
+    if not ioc_ids:
+        print("No IOCs detected.")
+        return
+
+    # Debugging step: Print the IOC IDs
+    print(f"IOC IDs: {ioc_ids}")
+    
+    # Fetch details for the first few IOC IDs to avoid overwhelming the request
+    try:
+        ioc_details = get_ioc_details(token, ioc_ids[:5])  # Limiting to 5 for testing
+        for ioc in ioc_details:
+            print(f"IOC ID: {ioc['id']}, Type: {ioc['type']}, Value: {ioc['value']}, Severity: {ioc['severity']}")
+    except Exception as e:
+        print(f"Error fetching IOC details: {e}")
+
+
+if __name__ == "__main__":
+    detect_iocs()
