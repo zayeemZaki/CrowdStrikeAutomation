@@ -2,8 +2,8 @@ import pyodbc
 import pandas as pd
 
 connection_string = (
-    "Driver={SQL Server};"
-    "Server=pbg1sql02s324.qa.fs;"
+    "Driver={ODBC Driver 18 for SQL Server};"
+    "Server=pbg1sql02s324.qa.fs\SystemCenter_CM;"
     "Database=CM_QA3;"
     "Trusted_Connection=yes;"
 )
