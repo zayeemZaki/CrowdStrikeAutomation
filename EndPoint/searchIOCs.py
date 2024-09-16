@@ -29,8 +29,20 @@ def get_ioc_details(token, ioc_ids):
     else:
         raise Exception(f"Failed to get IOC details: {response.text}")
 
+def get_ioc_details_single(token, ioc_id):
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    params = {'ids': ioc_id}
+    response = requests.get(IOC_DETAIL_URL, headers=headers, params=params)
+    if response.status_code == 200:
+        return response.json().get('resources', [])
+    else:
+        raise Exception(f"Failed to get IOC details for {ioc_id}: {response.text}")
+
 def detect_iocs():
-    token = get_access_token()
+    token = getToken()
     ioc_ids = query_ioc_ids(token)
     
     if not ioc_ids:
@@ -40,13 +52,14 @@ def detect_iocs():
     # Debugging step: Print the IOC IDs
     print(f"IOC IDs: {ioc_ids}")
     
-    # Fetch details for the first few IOC IDs to avoid overwhelming the request
-    try:
-        ioc_details = get_ioc_details(token, ioc_ids[:5])  # Limiting to 5 for testing
-        for ioc in ioc_details:
-            print(f"IOC ID: {ioc['id']}, Type: {ioc['type']}, Value: {ioc['value']}, Severity: {ioc['severity']}")
-    except Exception as e:
-        print(f"Error fetching IOC details: {e}")
+    # Fetch details for each IOC ID one by one
+    for ioc_id in ioc_ids[:5]:  # Limiting to 5 for testing
+        try:
+            ioc_details = get_ioc_details_single(token, ioc_id)
+            for ioc in ioc_details:
+                print(f"IOC ID: {ioc['id']}, Type: {ioc['type']}, Value: {ioc['value']}, Severity: {ioc['severity']}")
+        except Exception as e:
+            print(f"Error fetching IOC details: {e}")
 
 
 if __name__ == "__main__":
