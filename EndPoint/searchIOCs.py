@@ -48,12 +48,8 @@ def detect_iocs():
     if not ioc_ids:
         print("No IOCs detected.")
         return
-
-    # Debugging step: Print the IOC IDs
-    print(f"IOC IDs: {ioc_ids}")
     
-    # Fetch details for each IOC ID one by one
-    for ioc_id in ioc_ids[:5]:  # Limiting to 5 for testing
+    for ioc_id in ioc_ids:
         try:
             ioc_details = get_ioc_details_single(token, ioc_id)
             for ioc in ioc_details:

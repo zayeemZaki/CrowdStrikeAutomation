@@ -1,7 +1,5 @@
-import pyodbc
 import pandas as pd
-
-print("Available ODBC Drivers:", pyodbc.drivers())
+from sqlalchemy import create_engine
 
 connection_string = (
     "Driver={ODBC Driver 18 for SQL Server};"
@@ -10,6 +8,9 @@ connection_string = (
     "Trusted_Connection=yes;"
     "TrustServerCertificate=yes;"
 )
+
+# Create a SQLAlchemy engine
+engine = create_engine(f"mssql+pyodbc:///?odbc_connect={connection_string}")
 
 query = """
 SELECT
@@ -33,9 +34,11 @@ LEFT JOIN CM_FS3.dbo.v_GS_OPERATING_SYSTEM os ON sys.resourceid = os.resourceid
 LEFT JOIN CM_FS3.dbo.v_GS_COMPUTER_SYSTEM csys ON sys.resourceid = csys.resourceid
 """
 
-conn = pyodbc.connect(connection_string)
-df = pd.read_sql(query, conn)
-output_path = 'FS.LocalSCCM.csv'
+# Use the SQLAlchemy engine to execute the query and load data into a DataFrame
+with engine.connect() as conn:
+    df = pd.read_sql(query, conn)
+
+output_path = 'fs_inventory.csv'
 df.to_csv(output_path, index=False)
-conn.close()
+
 print(f"Data exported to {output_path}")
