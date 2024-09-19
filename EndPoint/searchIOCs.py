@@ -53,28 +53,98 @@ def get_ioc_details_single(token, ioc_id):
     else:
         raise Exception(f"Failed to get IOC details for {ioc_id}: {response.text}")
 
+def get_detections_for_ioc(token, ioc_id, ioc_type, ioc_value):
+    url = "https://api.crowdstrike.com/detects/queries/detects/v1"
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    # fql_filter = f"behaviors.ioc_type:'{ioc_type}' AND behaviors.ioc_value:'{ioc_value}' AND ioc_id:'{ioc_id}'"
+
+    params = {
+        'behaviors.ioc_type': ioc_type,
+        'behaviors.ioc_value': ioc_value,
+        'ioc_id': ioc_id
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200:
+        return response.json().get('resources', [])
+    else:
+        raise Exception(f"Failed to get detections for IOC: {response.text}")
+
+def get_detection_details(token, detection_ids):
+    url = "https://api.crowdstrike.com/detects/entities/summaries/GET/v1"
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    payload = {
+        "ids": detection_ids
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    response.raise_for_status()  # This will raise an exception for HTTP errors
+    return response.json()
+
+def format_detection_details(detection_details):
+    formatted_details = []
+    for detection in detection_details.get('resources', []):
+        host_info = detection.get("device", {})  # Fetch host information
+        behaviors = detection.get("behaviors", [{}])[0]  # Fetch behaviors related to the detection
+        detail = {
+            "Detection ID": detection.get("detection_id", "N/A"),
+            "Timestamp": detection.get("created_timestamp", "N/A"),
+            "Severity": detection.get("max_severity_displayname", "N/A"),
+            "Status": detection.get("status", "N/A"),
+            "Description": behaviors.get("description", "N/A"),  # Fetching description from behaviors
+            "Host": host_info.get("hostname", "N/A"),  # Correct key for hostname
+        }
+        formatted_details.append(detail)
+    return formatted_details
+
+
+# Function to print formatted detection details
+def print_detection_details(formatted_details):
+    for detail in formatted_details:
+        print("\n--- Detection Details ---")
+        for key, value in detail.items():
+            print(f"{key}: {value}")
+        print("-" * 50)
+
 # Function to ask user for an IOC ID and display detailed output
 def get_ioc_details_by_id(token):
     ioc_id = input("Enter the IOC ID to get more detailed information: ").strip()
     try:
         ioc_details = get_ioc_details_single(token, ioc_id)
+
         if ioc_details:
             for ioc in ioc_details:
                 print(f"\n--- Detailed Information for IOC ID: {ioc['id']} ---")
                 print(f"Type: {ioc['type']}")
                 print(f"Value: {ioc['value']}")
                 print(f"Severity: {ioc.get('severity', 'N/A')}")
-                print(f"Created Timestamp: {ioc.get('created_timestamp', 'N/A')}")
-                print(f"First Seen: {ioc.get('first_seen', 'N/A')}")
-                print(f"Last Seen: {ioc.get('last_seen', 'N/A')}")
-                print(f"Description: {ioc.get('description', 'N/A')}")
+                print(f"Created On: {ioc.get('created_on', 'N/A')}")
+                print(f"Created By: {ioc.get('created_by', 'N/A')}")
+                print(f"Modified On: {ioc.get('modified_on', 'N/A')}")
+                print(f"Modified By: {ioc.get('modified_by', 'N/A')}")
+                print(f"Deleted: {ioc['deleted']}")
                 print(f"Source: {ioc.get('source', 'N/A')}")
-                print(f"Expiration Timestamp: {ioc.get('expiration_timestamp', 'N/A')}")
+                print(f"Description: {ioc.get('description', 'N/A')}")
                 print("-" * 50)
+
+                # Get detection details related to this IOC
+                detection_ids = get_detections_for_ioc(token, ioc['id'], ioc['type'], ioc['value'])
+                if detection_ids:
+                    detection_details_response = get_detection_details(token, detection_ids)
+                    formatted_details = format_detection_details(detection_details_response)
+                    print_detection_details(formatted_details)
+                else:
+                    print("No detections found for the provided IOC ID.")
         else:
             print("No details found for the provided IOC ID.")
     except Exception as e:
         print(f"Error fetching IOC details: {e}")
+
 
 def filter_criteria():
     # Ask for filtering options
