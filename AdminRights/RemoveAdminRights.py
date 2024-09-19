@@ -175,7 +175,8 @@ if __name__ == '__main__':
             edit_script(token, script_id)
 
         while True:
-            if is_device_online(token, device_id):
+            status = is_device_online(token, device_id)
+            if status:
                 session_id = initiateRtrSession(token, device_id)
                 if not session_id:
                     print(f'Failed to initiate RTR session for device ID: {device_id}')
@@ -183,8 +184,12 @@ if __name__ == '__main__':
                 run_script(token, session_id)
                 break 
             else:
-                logging.info("Device is offline. Waiting before retrying...")
-                time.sleep(60)
+                user_input = input("Do you want to keep retrying? (Type: \"Y\" for yes and \"N\" for no)")
+                if user_input == "Y":
+                    logging.info("Device is offline. Waiting before retrying...")
+                    time.sleep(60)
+                else:
+                    break
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
