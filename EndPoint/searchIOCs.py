@@ -93,7 +93,7 @@ def format_detection_details(detection_details):
         behaviors = detection.get("behaviors", [{}])[0]  # Fetch behaviors related to the detection
         detail = {
             "Detection ID": detection.get("detection_id", "N/A"),
-            "Timestamp": detection.get("created_timestamp", "N/A"),
+            "Timestamp": behaviors.get("timestamp", "N/A"),
             "Severity": detection.get("max_severity_displayname", "N/A"),
             "Status": detection.get("status", "N/A"),
             "Description": behaviors.get("description", "N/A"),  # Fetching description from behaviors
