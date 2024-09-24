@@ -64,7 +64,6 @@ def get_detections_for_ioc(token, ioc_value):
     params = {
         'filter': fql_filter
     }
-    print(f"Querying detections with filter: {fql_filter}")  # Debugging step
 
     response = requests.get(url, headers=headers, params=params)
     if response.status_code == 200:
@@ -82,22 +81,22 @@ def get_detection_details(token, detection_ids):
         "ids": detection_ids
     }
     response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()  # This will raise an exception for HTTP errors
+    response.raise_for_status()
     return response.json()
 
 def format_detection_details(detection_details):
     formatted_details = []
     for detection in detection_details.get('resources', []):
-        host_info = detection.get("device", {})  # Fetch host information
-        behaviors = detection.get("behaviors", [{}])[0]  # Fetch behaviors related to the detection
+        host_info = detection.get("device", {}) 
+        behaviors = detection.get("behaviors", [{}])[0] 
         detail = {
             "Detection ID": detection.get("detection_id", "N/A"),
             "Timestamp": behaviors.get("timestamp", "N/A"),
             "Severity": detection.get("max_severity_displayname", "N/A"),
             "Severity_DIGITS": behaviors.get("severity", "N/A"),
             "Status": detection.get("status", "N/A"),
-            "Description": behaviors.get("description", "N/A"),  # Fetching description from behaviors
-            "Host": host_info.get("hostname", "N/A"),  # Correct key for hostname
+            "Description": behaviors.get("description", "N/A"),
+            "Host": host_info.get("hostname", "N/A"), 
             "Type": behaviors.get("ioc_type", "N/A"),
             "Value": behaviors.get("ioc_value", "N/A"),
             "IOC_id": detection.get("ioc_id", "N/A"),
@@ -119,18 +118,16 @@ def print_detection_details(formatted_details):
 def get_ioc_details_by_id(token):
     while True:
         ioc_id = input("Enter the IOC ID to get more detailed information (or type 'Stop' to exit): ").strip()
-        if ioc_id.lower() == "stop":
-            break
+        if ioc_id.lower() == "stop" : break
         
         try:
             ioc_details = get_ioc_details_single(token, ioc_id)
-            
             if not ioc_details:
                 print("No details found for the provided IOC ID.")
-                continue
-            
+                continue       
 
-            ioc = ioc_details[0]  # As you're fetching details for one specific IOC ID, get the first element
+            ioc = ioc_details[0]
+
             print(f"\n--- Detailed Information for IOC ID: {ioc['id']} ---")
             print(f"Type: {ioc['type']}")
             print(f"Value: {ioc['value']}")
@@ -141,7 +138,6 @@ def get_ioc_details_by_id(token):
             print(f"Modified On: {ioc.get('modified_on', 'N/A')}")
             print(f"Modified By: {ioc.get('modified_by', 'N/A')}")
             print(f"Deleted: {ioc['deleted']}")
-
             print("-" * 50)
                     
             # Get detection details related to this IOC if needed
@@ -202,27 +198,17 @@ def detect_iocs():
         try:
             ioc_details = get_ioc_details_single(token, ioc_id)
             for ioc in ioc_details:
-                severity = ioc.get('severity', 'unknown').lower()  # Handle missing severity
-                type_of_ioc = ioc.get('type', 'unknown').lower()  # Get the IOC type
-
-                # Map severity to numerical value and filter
+                severity = ioc.get('severity', 'unknown').lower() 
+                type_of_ioc = ioc.get('type', 'unknown').lower()
                 ioc_severity_value = severity_map.get(severity, 0)
                 
-                # Filter by severity
-                if min_severity_value and ioc_severity_value < min_severity_value:
-                    continue
+                if min_severity_value and ioc_severity_value < min_severity_value : continue
+                if ioc_type and ioc_type != type_of_ioc : continue
+                if date_range and not filter_ioc_by_date(ioc, date_range) : continue
                 
-                # Filter by IOC type
-                if ioc_type and ioc_type != type_of_ioc:
-                    continue
-
-                # Filter by date range if applicable
-                if date_range and not filter_ioc_by_date(ioc, date_range):
-                    continue
-                
-                # Print IOC details
-                print(f"IOC ID: {ioc['id']}, Type: {ioc['type']}, Value: {ioc['value']}, Severity: {severity}")
-                print(f"IOC Description: {ioc.get('description', 'N/A')}")
+                print(f"IOC ID: {ioc['id']}, Type: {ioc['type']}, Severity: {severity}")
+                print(f"Value: {ioc['value']}")
+                print(f"Description: {ioc.get('description', 'N/A')}")
                 print("-" * 50)
         except Exception as e:
             print(f"Error fetching IOC details: {e}")
