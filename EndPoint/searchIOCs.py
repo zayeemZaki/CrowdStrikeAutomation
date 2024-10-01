@@ -21,24 +21,38 @@ def query_ioc_ids(token):
     
     ioc_ids = []
     next_cursor = None
+    params = {
+        'limit': 100  # Adjust the limit as per the API's capability
+    }
+
     while True:
-        params = {}
         if next_cursor:
-            params['cursor'] = next_cursor
+            params['after'] = next_cursor
         
         response = requests.get(IOC_QUERY_URL, headers=headers, params=params)
         if response.status_code == 200:
             json_response = response.json()
-            ioc_ids.extend(json_response.get('resources', []))  # Append the results to the list
-            next_cursor = json_response.get('meta', {}).get('pagination', {}).get('next_cursor')
+            new_ioc_ids = json_response.get('resources', [])
+            
+            if not new_ioc_ids:
+                print("No more IOCs to retrieve.")
+                break
+            
+            ioc_ids.extend(new_ioc_ids)
+            next_cursor = json_response.get('meta', {}).get('pagination', {}).get('after')
+            print(f"Retrieved {len(ioc_ids)} IOCs so far. Next Cursor: {next_cursor}")
             
             # If there is no next_cursor, we are done
             if not next_cursor:
+                print("Pagination Complete: No next_cursor found.")
                 break
+
         else:
+            print(f"Error in pagination loop: {response.status_code} - {response.text}")
             raise Exception(f"Failed to query IOCs: {response.text}")
     
     return ioc_ids
+
 
 # Get detailed information for each IOC
 def get_ioc_details_single(token, ioc_id):
@@ -194,7 +208,7 @@ def detect_iocs():
     # Convert the severity to numerical value
     min_severity_value = severity_map.get(min_severity, 0)
 
-    for ioc_id in ioc_ids:
+    for i, ioc_id in enumerate(ioc_ids):
         try:
             ioc_details = get_ioc_details_single(token, ioc_id)
             for ioc in ioc_details:
@@ -206,9 +220,9 @@ def detect_iocs():
                 if ioc_type and ioc_type != type_of_ioc : continue
                 if date_range and not filter_ioc_by_date(ioc, date_range) : continue
                 
-                print(f"IOC ID: {ioc['id']}, Type: {ioc['type']}, Severity: {severity}")
-                print(f"Value: {ioc['value']}")
-                print(f"Description: {ioc.get('description', 'N/A')}")
+                # print(f"IOC ID: {ioc['id']}, Type: {ioc['type']}, Severity: {severity}")
+                print(f" {i+1} : Value: {ioc['value']}")
+                # print(f"Description: {ioc.get('description', 'N/A')}")
                 print("-" * 50)
         except Exception as e:
             print(f"Error fetching IOC details: {e}")
