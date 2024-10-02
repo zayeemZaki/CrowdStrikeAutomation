@@ -35,16 +35,13 @@ def query_ioc_ids(token):
             new_ioc_ids = json_response.get('resources', [])
             
             if not new_ioc_ids:
-                print("No more IOCs to retrieve.")
                 break
             
             ioc_ids.extend(new_ioc_ids)
             next_cursor = json_response.get('meta', {}).get('pagination', {}).get('after')
-            print(f"Retrieved {len(ioc_ids)} IOCs so far. Next Cursor: {next_cursor}")
             
             # If there is no next_cursor, we are done
             if not next_cursor:
-                print("Pagination Complete: No next_cursor found.")
                 break
 
         else:
@@ -220,9 +217,9 @@ def detect_iocs():
                 if ioc_type and ioc_type != type_of_ioc : continue
                 if date_range and not filter_ioc_by_date(ioc, date_range) : continue
                 
-                # print(f"IOC ID: {ioc['id']}, Type: {ioc['type']}, Severity: {severity}")
-                print(f" {i+1} : Value: {ioc['value']}")
-                # print(f"Description: {ioc.get('description', 'N/A')}")
+                print(f"{i+1} : IOC ID: {ioc['id']}, Type: {ioc['type']}, Severity: {severity}")
+                print(f"Value: {ioc['value']}")
+                print(f"Description: {ioc.get('description', 'N/A')}")
                 print("-" * 50)
         except Exception as e:
             print(f"Error fetching IOC details: {e}")
