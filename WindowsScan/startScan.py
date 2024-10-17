@@ -102,7 +102,6 @@ def get_malicious_file_details(token, file_ids):
         print(f'Status code: {response.status_code}')
         print(f'Response: {response.text}')
 
-# Obtain the token
 token = getToken()
 
 # Define scan parameters
