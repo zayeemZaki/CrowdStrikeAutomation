@@ -17,3 +17,6 @@ EndPoint/behaviors.csv
 EndPoint/detections.csv
 EndPoint/incidents.csv
 SCCM_inventory
+
+WindowsScan/config.yaml
+
