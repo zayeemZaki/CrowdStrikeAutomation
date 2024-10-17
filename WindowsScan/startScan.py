@@ -52,7 +52,7 @@ def get_scan_details(token, scan_id):
         print('Scan details retrieved successfully.')
         scan_details = response.json()
         print(json.dumps(scan_details, indent=2))
-        return scan_details['resources'][0]  # Assuming we're interested in the first resource
+        return scan_details['resources'][0]
     else:
         print('Failed to retrieve scan details.')
         print(f'Status code: {response.status_code}')
@@ -67,6 +67,7 @@ def poll_scan_status(token, scan_id):
             print(f'Scan status: {status}')
             if status in ['complete', 'canceled', 'failed']:
                 return scan_details
+        print("Scanning ...")
         time.sleep(30)  # Wait for 30 seconds before polling again
 
 def get_malicious_file_ids_from_scan(scan_details):
