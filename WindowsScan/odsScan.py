@@ -29,7 +29,8 @@ scan_payload = {
             "from": "2024-01-01T00:00:00Z",
             "to": "2024-01-02T00:00:00Z"
         }
-    ]
+    ],
+    "cpu_priority": 3
 }
 
 response = falcon.create_scan(body=scan_payload)
