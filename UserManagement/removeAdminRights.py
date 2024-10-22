@@ -31,6 +31,7 @@ def main():
         get_available_role_ids = falcon.get_available_role_ids()
         print("Available role ids: ", get_available_role_ids)
 
+        
         user_name = ""
 
         token = getToken()
