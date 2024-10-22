@@ -35,12 +35,15 @@ def main():
 
         token = getToken()
         deviceID = getDeviceId(token, user_name)
+        print("Device ID: ", deviceID)
 
         # Initialize `admin_role_id` variable
         admin_role_id = next((role for role in get_available_role_ids['body']['resources'] if role['name'] == "Admin Role"), {}).get('id', None)
         
         if not admin_role_id:
             print("Admin role ID not found.")
+        else:
+            print(admin_role_id)
 
         # Gets user's role ids
         user_roles_response = falcon.get_user_role_ids(user_id=deviceID)
@@ -51,6 +54,8 @@ def main():
             print("Admin role revoked successfully.")
         else:
             print("User does not have the admin role.")
+
+        print("Revoke Response: ", revoke_response)
 
     except Exception as e:
         print(f"Error occurred: {e}")
