@@ -19,3 +19,5 @@ EndPoint/incidents.csv
 SCCM_inventory
 WindowsScan/__pycache__
 WindowsScan/config.yaml 
+
+UserManagement/config.yaml
