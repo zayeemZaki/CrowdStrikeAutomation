@@ -17,6 +17,7 @@ def load_config(file_path):
         sys.exit(1)
 
 config = load_config('config.yaml')
+
 def find_detections(token):
     """ Get the list of detection IDs from the API """
     url = "https://api.crowdstrike.com/detects/queries/detects/v1"
@@ -48,16 +49,16 @@ def list_detections(detections):
         return None
 
     print("\nAvailable Detections:")
-    for idx, detection in enumerate(detections, 1):
+    for idx, detection in enumerate(detections):
         # Check available fields in each detection
-        sha256 = detection.get('sha256', 'N/A')
-        filename = detection.get('filename', 'N/A')
-        print(f"{idx}. SHA256: {sha256}, Filename: {filename}")
+        sha256 = detection['behaviors'][0]['sha256']
+        filename = detection['behaviors'][0]['filename']
+        print(f"{idx + 1}. SHA256: {sha256}, Filename: {filename}")
 
-    selected_index = int(input("\nEnter the number of the detection you want to scan: ")) - 1
+    selected_index = int(input("\nEnter the index of the detection you want to scan: ")) - 1
 
     if 0 <= selected_index < len(detections):
-        selected_hash = detections[selected_index].get('sha256')
+        selected_hash = detections[selected_index]['behaviors'][0]['sha256']
         if selected_hash and selected_hash != 'N/A':
             return selected_hash
         else:
@@ -96,10 +97,6 @@ if 'resources' in detections_response:
             
             if 'resources' in detection_details_response:
                 detections_data = detection_details_response['resources']
-
-                # Debug: Print available fields for each detection
-                for detection in detections_data:
-                    print("\nDetection Details:", detection)
 
                 # List detections and ask user to select one
                 selected_hash = list_detections(detections_data)

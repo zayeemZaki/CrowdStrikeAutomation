@@ -72,13 +72,13 @@ def main():
         client_secret=config['client_secret']
     )
 
-    hosts = [""]
+    hosts = []
     device_ids = ['b9e1afd1cd38473b8d35ffa992ba5aa0'] # added default id for testing
 
     for host in hosts:
         device_ids.append(getDeviceId(token, host))
 
-    print(device_ids)
+    print("Device ids", device_ids)
     all_ids = []
     for device in device_ids:
         ids = query_malicious_files(falcon, device)
