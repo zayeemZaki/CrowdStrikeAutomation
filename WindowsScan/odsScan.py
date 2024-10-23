@@ -33,17 +33,17 @@ scan_payload = {
     ],
     "cpu_priority": 3,
     "cloud_ml_level_detection": 1, 
-    "cloud_ml_level_prevention": 2, 
+    "cloud_ml_level_prevention": 1, 
     "description": "On Demand Scan Description",
     "endpoint_notification": True,
     "initiated_from": "manual",
-    "max_duration": 3600,
+    "max_duration": 60,  
     "max_file_size": 104857600,
     "pause_duration": 60,
     "quarantine": True,
     "sensor_ml_level_detection": 1,
-    "sensor_ml_level_prevention": 2
+    "sensor_ml_level_prevention": 1
 }
- 
+
 response = falcon.create_scan(body=scan_payload)
 print(response)
