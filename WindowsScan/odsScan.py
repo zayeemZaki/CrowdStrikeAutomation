@@ -23,7 +23,7 @@ falcon = ODS(client_id=config['client_id'],
 
 scan_payload = {
     "host_ids": ["host_id"],
-    "file_paths": ["C:"],
+    "file_paths": ["C://"],
     "filter": "string",
     "date_ranges": [
         {
