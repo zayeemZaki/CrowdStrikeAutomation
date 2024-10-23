@@ -22,7 +22,8 @@ falcon = ODS(client_id=config['client_id'],
         client_secret=config['client_secret'])
 
 scan_payload = {
-    "host_ids": [""],
+    "host_ids": ["host_id"],
+    "file_paths": ["C:"],
     "filter": "string",
     "date_ranges": [
         {
@@ -30,8 +31,19 @@ scan_payload = {
             "to": "2024-01-02T00:00:00Z"
         }
     ],
-    "cpu_priority": 3
+    "cpu_priority": 3,
+    "cloud_ml_level_detection": 1, 
+    "cloud_ml_level_prevention": 2, 
+    "description": "On Demand Scan Description",
+    "endpoint_notification": True,
+    "initiated_from": "manual",
+    "max_duration": 3600,
+    "max_file_size": 104857600,
+    "pause_duration": 60,
+    "quarantine": True,
+    "sensor_ml_level_detection": 1,
+    "sensor_ml_level_prevention": 2
 }
-
+ 
 response = falcon.create_scan(body=scan_payload)
 print(response)
