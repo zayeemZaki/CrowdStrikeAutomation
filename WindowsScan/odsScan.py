@@ -39,9 +39,9 @@ def main():
         "description": "On Demand Scan Description",
         "endpoint_notification": True,
         "initiated_from": "manual",
-        "max_duration": 60,
+        "max_duration": 1,
         "max_file_size": 104857600,
-        "pause_duration": 60,
+        "pause_duration": 1,
         "quarantine": True,
         "sensor_ml_level_detection": 1,
         "sensor_ml_level_prevention": 1
