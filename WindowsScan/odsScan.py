@@ -27,12 +27,6 @@ def main():
         "host_ids": ["host_id"],
         "file_paths": ["C://"],
         "filter": "",
-        "date_ranges": [
-            {
-                "from": "2024-01-01T00:00:00Z",
-                "to": "2024-01-02T00:00:00Z"
-            }
-        ],
         "cpu_priority": 3,
         "cloud_ml_level_detection": 1,
         "cloud_ml_level_prevention": 1,
