@@ -24,21 +24,20 @@ def main():
     falcon = ODS(client_id=config['client_id'], client_secret=config['client_secret'])
 
     scan_payload = {
-        "host_ids": ["host_id"],
-        "file_paths": ["C://"],
-        "filter": "",
-        "cpu_priority": 3,
-        "cloud_ml_level_detection": 1,
-        "cloud_ml_level_prevention": 1,
+        "cloud_ml_level_detection": 0,
+        "cloud_ml_level_prevention": 0,
+        "cpu_priority": 0,
         "description": "On Demand Scan Description",
         "endpoint_notification": True,
+        "file_paths": ["C://"],
+        "hosts": ["host_id"],
         "initiated_from": "manual",
-        "max_duration": 1,
-        "max_file_size": 104857600,
-        "pause_duration": 1,
+        "max_duration": 0,
+        "max_file_size": 0,
+        "pause_duration": 0,
         "quarantine": True,
-        "sensor_ml_level_detection": 1,
-        "sensor_ml_level_prevention": 1
+        "sensor_ml_level_detection": 0,
+        "sensor_ml_level_prevention": 0
     }
 
     try:
