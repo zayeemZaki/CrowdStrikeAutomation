@@ -2,10 +2,9 @@ import os
 import sys
 import yaml
 from falconpy import ODS
-from GetToken import getToken
 
 def load_config(file_path):
-    """ Load configuration from a yaml file """
+    """Load configuration from a YAML file."""
     if not os.path.isfile(file_path):
         print(f"Error: {file_path} does not exist.")
         sys.exit(1)
@@ -19,17 +18,16 @@ def load_config(file_path):
 
 def main():
     config = load_config('config.yaml')
-    token = getToken()
 
     falcon = ODS(client_id=config['client_id'], client_secret=config['client_secret'])
 
     scan_payload = {
         "cloud_ml_level_detection": 0,
         "cloud_ml_level_prevention": 0,
-        "cpu_priority": 0,
+        "cpu_priority": 1,
         "description": "On Demand Scan Description",
         "endpoint_notification": True,
-        "file_paths": ["C://"],
+        "file_paths": ["C:\\\\"],
         "hosts": ["host_id"],
         "initiated_from": "manual",
         "max_duration": 0,
@@ -42,9 +40,16 @@ def main():
 
     try:
         response = falcon.create_scan(body=scan_payload)
-        print("Scan response:", response)
+        
+        if response.get('status_code') == 200 or response.get('status_code') == 201:
+            print("Scan created successfully.")
+            print("Response:", response)
+        else:
+            print("Error creating scan:")
+            print(f"Status Code: {response.get('status_code')}")
+            print(f"Error Message: {response.get('body', {}).get('errors')}")
     except Exception as e:
-        print(f"Error creating scan: {e}")
+        print(f"Exception while creating scan: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
