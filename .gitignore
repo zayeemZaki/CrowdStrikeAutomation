@@ -21,3 +21,4 @@ WindowsScan/__pycache__
 WindowsScan/config.yaml 
 
 UserManagement/config.yaml
+StaleAdmin/config.yaml
