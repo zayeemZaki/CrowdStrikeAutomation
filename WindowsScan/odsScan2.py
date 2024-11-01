@@ -2,8 +2,6 @@ import os
 import sys
 import yaml
 from falconpy import APIHarnessV2
-from GetDeviceId import getDeviceId
-from GetToken import getToken
 
 def load_config(file_path):
     """Load configuration from a YAML file."""
@@ -20,17 +18,12 @@ def load_config(file_path):
 
 def main():
     config = load_config('config.yaml')
-    token = getToken()
 
     falcon = APIHarnessV2(client_id=config['client_id'], 
                  client_secret=config['client_secret']
                  )
-
-    hosts = [""] #Please add host id here
-
-    host_ids = []
-    for host in hosts:
-        host_ids.append(getDeviceId(token, host))
+ 
+    host_groups = []  #please enter group id here
 
     BODY = {
         "cloud_ml_level_detection": 2,
@@ -39,7 +32,8 @@ def main():
         "description": "On Demand Scan Description",
         "endpoint_notification": True,
         "file_paths": ["C:\\Windows"],
-        "hosts": host_ids,
+        "hosts": [],
+        "host_groups" : host_groups,
         "initiated_from": "manual",
         "max_duration": 2,
         "max_file_size": 60,
