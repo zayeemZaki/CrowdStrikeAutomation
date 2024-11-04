@@ -30,7 +30,7 @@ def main():
 
     host_ids = []
     for host in hosts:
-        host_ids.append(getDeviceId(token, host))
+        host_ids.append(str(getDeviceId(token, host)))
 
     BODY = {
         "cloud_ml_level_detection": 2,
