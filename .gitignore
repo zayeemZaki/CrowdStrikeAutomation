@@ -22,3 +22,5 @@ WindowsScan/config.yaml
 
 UserManagement/config.yaml
 StaleAdmin/config.yaml
+Entities/config.yaml
+Entities/__pycache__
