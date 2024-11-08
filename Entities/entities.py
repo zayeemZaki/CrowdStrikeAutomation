@@ -161,17 +161,15 @@ if response.status_code == 200:
         else:
             inactivePeriod = None
 
-        allEntities.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, inactivePeriod))
-
-    data = {
-        'Primary Name': [user[0] for user in allEntities],
-        'Secondary Name': [user[1] for user in allEntities],
-        'Is Human': [user[2] for user in allEntities],
-        'Risk Score': [user[3] for user in allEntities],
-        'Risk Severity': [user[4] for user in allEntities],
-        'Domain': [user[5] for user in allEntities],
-        'Inactive Period (days)': [user[6] for user in allEntities],
-    }
+        allEntities.append((primaryName, secondaryName, isHuman, riskScore, riskScoreSeverity, domain, inactivePeriod))+data = {
+            'Primary Name': [user[0] for user in allEntities],
+            'Secondary Name': [user[1] for user in allEntities],
+            'Is Human': [user[2] for user in allEntities],
+            'Risk Score': [user[3] for user in allEntities],
+            'Risk Severity': [user[4] for user in allEntities],
+            'Domain': [user[5] for user in allEntities],
+            'Inactive Period (days)': [user[6] for user in allEntities],
+        }
 
     df = pd.DataFrame(data)
 
