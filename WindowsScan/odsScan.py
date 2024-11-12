@@ -1,7 +1,7 @@
 import os
 import sys
 import yaml
-from falconpy import APIHarnessV2
+from falconpy import ODS
 from GetDeviceId import getDeviceId
 from GetToken import getToken
 
@@ -21,16 +21,14 @@ def load_config(file_path):
 def main():
     config = load_config('config.yaml')
     token = getToken()
+    falcon = ODS(client_id=config['client_id'], client_secret=config['client_secret'])
 
-    falcon = APIHarnessV2(client_id=config['client_id'], 
-                 client_secret=config['client_secret']
-                 )
+    hosts = [""]  # Replace with host IDs
+    host_ids = [getDeviceId(token, host) for host in hosts if host]
 
-    hosts = [""] #Please add host id here
-
-    host_ids = []
-    for host in hosts:
-        host_ids.append(str(getDeviceId(token, host)))
+    if not host_ids:
+        print("No valid host IDs found.")
+        sys.exit(1)
 
     BODY = {
         "cloud_ml_level_detection": 2,
@@ -50,10 +48,9 @@ def main():
     }
 
     try:
-        response = falcon.command("create_scan", body=BODY)
+        response = falcon.create_scan(body=BODY)
 
-        
-        if response.get('status_code') == 200 or response.get('status_code') == 201:
+        if response.get('status_code') in [200, 201]:
             print("Scan created successfully.")
             print("Response:", response)
         else:
