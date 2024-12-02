@@ -2,10 +2,6 @@ import requests
 import pandas as pd
 from datetime import datetime, timezone
 from GetToken import getToken
-from LoadConfig import load_config  # loads config.yaml
-
-# Load config
-config = load_config('config.yaml')
 graphqlUrl = 'https://api.crowdstrike.com/identity-protection/combined/graphql/v1'
 rest_api_url = 'https://api.crowdstrike.com/alerts/entities/alerts/v1'
 
